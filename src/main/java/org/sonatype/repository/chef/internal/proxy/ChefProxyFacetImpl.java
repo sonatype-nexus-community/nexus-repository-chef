@@ -77,6 +77,8 @@ public class ChefProxyFacetImpl
     switch (assetKind) {
       case COOKBOOK:
         return null;
+      case COOKBOOK_DETAILS:
+        return null;
       default:
         throw new IllegalStateException("Received an invalid AssetKind of type: " + assetKind.name());
     }
@@ -93,6 +95,8 @@ public class ChefProxyFacetImpl
             chefPathUtils.cookbook(matcherState),
             chefPathUtils.version(matcherState),
             chefPathUtils.buildAssetPath(matcherState));
+      case COOKBOOK_DETAILS:
+        return content;
       default:
         throw new IllegalStateException("Received an invalid AssetKind of type: " + assetKind.name());
     }

@@ -129,4 +129,23 @@ abstract class ChefRecipeSupport
         }
     )
   }
+
+  /**
+   * Matcher for cookbook download.
+   */
+  static Matcher cookbookDetailsMatcher() {
+    LogicMatchers.and(
+        new ActionMatcher(GET, HEAD),
+        new TokenMatcher('/api/v1/cookbooks/{cookbook:.+}'),
+        new Matcher() {
+          @Override
+          boolean matches(final Context context) {
+            context.attributes.set(AssetKind.class, AssetKind.COOKBOOK_DETAILS)
+            return true
+          }
+        }
+    )
+  }
+
+
 }

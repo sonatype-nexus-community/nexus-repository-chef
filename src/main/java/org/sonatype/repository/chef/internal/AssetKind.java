@@ -26,6 +26,7 @@ import org.sonatype.nexus.repository.cache.CacheControllerHolder.CacheType;
 public enum AssetKind
 {
   CHEF_INDEX(CacheControllerHolder.METADATA),
+  COOKBOOK_DETAILS(CacheControllerHolder.METADATA),
   COOKBOOK(CacheControllerHolder.CONTENT);
 
   private final CacheType cacheType;

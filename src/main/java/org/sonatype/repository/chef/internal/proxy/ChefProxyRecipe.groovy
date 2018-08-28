@@ -76,7 +76,7 @@ class ChefProxyRecipe
   private ViewFacet configure(final ConfigurableViewFacet facet) {
     Router.Builder builder = new Router.Builder()
 
-    [downloadMatcher()].each { matcher ->
+    [cookbookDetailsMatcher(), downloadMatcher()].each { matcher ->
       builder.route(new Route.Builder().matcher(matcher)
           .handler(timingHandler)
           .handler(securityHandler)
