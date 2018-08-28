@@ -10,22 +10,32 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.nexus.plugins.chef.internal;
+package org.sonatype.repository.chef.internal;
 
-import org.junit.Test;
+import javax.annotation.Nonnull;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import org.sonatype.nexus.repository.cache.CacheControllerHolder;
+import org.sonatype.nexus.repository.cache.CacheControllerHolder.CacheType;
 
-public class ChefFormatTest
+/**
+ * Asset kinds for Chef
+ *
+ * Examples of all can be found at: https://github.com/kubernetes/helm/blob/master/docs/chart_repository.md#the-chart-repository-structure
+ * @since 0.0.1
+ */
+public enum AssetKind
 {
-  private ChefFormat underTest;
+  CHEF_INDEX(CacheControllerHolder.METADATA),
+  COOKBOOK(CacheControllerHolder.CONTENT);
 
-  @Test
-  public void checkFormatNameIsCorrect() {
-    underTest = new ChefFormat();
+  private final CacheType cacheType;
 
-    assertThat(underTest.getValue(), is(equalTo("chef")));
+  AssetKind(final CacheType cacheType) {
+    this.cacheType = cacheType;
+  }
+
+  @Nonnull
+  public CacheType getCacheType() {
+    return cacheType;
   }
 }
