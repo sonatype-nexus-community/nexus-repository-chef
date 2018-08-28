@@ -16,6 +16,7 @@ import java.io.IOException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.sonatype.nexus.repository.cache.CacheInfo;
@@ -23,12 +24,25 @@ import org.sonatype.nexus.repository.config.Configuration;
 import org.sonatype.nexus.repository.proxy.ProxyFacet;
 import org.sonatype.nexus.repository.proxy.ProxyFacetSupport;
 import org.sonatype.nexus.repository.storage.Asset;
+import org.sonatype.nexus.repository.storage.Bucket;
+import org.sonatype.nexus.repository.storage.Component;
+import org.sonatype.nexus.repository.storage.StorageFacet;
 import org.sonatype.nexus.repository.storage.StorageTx;
+import org.sonatype.nexus.repository.storage.TempBlob;
+import org.sonatype.nexus.repository.transaction.TransactionalStoreBlob;
 import org.sonatype.nexus.repository.transaction.TransactionalTouchMetadata;
 import org.sonatype.nexus.repository.view.Content;
 import org.sonatype.nexus.repository.view.Context;
+import org.sonatype.nexus.repository.view.Payload;
+import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher;
 import org.sonatype.nexus.transaction.UnitOfWork;
 import org.sonatype.repository.chef.internal.AssetKind;
+import org.sonatype.repository.chef.internal.util.ChefDataAccess;
+import org.sonatype.repository.chef.internal.util.ChefPathUtils;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static org.sonatype.nexus.repository.storage.AssetEntityAdapter.P_ASSET_KIND;
+import static org.sonatype.repository.chef.internal.AssetKind.COOKBOOK;
 
 /**
  * Chef {@link ProxyFacet} implementation.
@@ -39,6 +53,17 @@ import org.sonatype.repository.chef.internal.AssetKind;
 public class ChefProxyFacetImpl
     extends ProxyFacetSupport
 {
+  private ChefDataAccess chefDataAccess;
+
+  private ChefPathUtils chefPathUtils;
+
+  @Inject
+  public ChefProxyFacetImpl(final ChefDataAccess chefDataAccess,
+                            final ChefPathUtils chefPathUtils) {
+    this.chefDataAccess = checkNotNull(chefDataAccess);
+    this.chefPathUtils = checkNotNull(chefPathUtils);
+  }
+
   // HACK: Workaround for known CGLIB issue, forces an Import-Package for org.sonatype.nexus.repository.config
   @Override
   protected void doValidate(final Configuration configuration) throws Exception {
@@ -62,10 +87,60 @@ public class ChefProxyFacetImpl
     AssetKind assetKind = context.getAttributes().require(AssetKind.class);
     switch(assetKind) {
       case COOKBOOK:
-        return content;
+        TokenMatcher.State matcherState = chefPathUtils.matcherState(context);
+        return putCookbook(content,
+            COOKBOOK,
+            chefPathUtils.cookbook(matcherState),
+            chefPathUtils.version(matcherState),
+            chefPathUtils.buildAssetPath(matcherState));
       default:
         throw new IllegalStateException("Received an invalid AssetKind of type: " + assetKind.name());
     }
+  }
+
+  private Content putCookbook(final Content content,
+                              final AssetKind assetKind,
+                              final String name,
+                              final String version,
+                              final String assetPath)  throws IOException
+  {
+    StorageFacet storageFacet = facet(StorageFacet.class);
+    try (TempBlob tempBlob = storageFacet.createTempBlob(content, ChefDataAccess.HASH_ALGORITHMS)) {
+      return doPutCookbook(tempBlob, content, assetKind, name, version, assetPath);
+    }
+  }
+
+  @TransactionalStoreBlob
+  protected Content doPutCookbook(final TempBlob tempBlob,
+                                  final Payload payload,
+                                  final AssetKind assetKind,
+                                  final String name,
+                                  final String version,
+                                  final String assetPath) throws IOException
+  {
+    StorageTx tx = UnitOfWork.currentTx();
+    Bucket bucket = tx.findBucket(getRepository());
+
+    Component component = chefDataAccess.findComponent(tx,
+        getRepository(),
+        name,
+        version);
+
+    if (component == null) {
+      component = tx.createComponent(bucket, getRepository().getFormat())
+          .name(name)
+          .version(version);
+    }
+    tx.saveComponent(component);
+
+    Asset asset = chefDataAccess.findAsset(tx, bucket, assetPath);
+    if (asset == null) {
+      asset = tx.createAsset(bucket, component);
+      asset.name(assetPath);
+      asset.formatAttributes().set(P_ASSET_KIND, assetKind.name());
+    }
+
+    return chefDataAccess.saveAsset(tx, asset, tempBlob, payload);
   }
 
   @Override

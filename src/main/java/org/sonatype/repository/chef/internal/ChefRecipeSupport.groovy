@@ -119,7 +119,7 @@ abstract class ChefRecipeSupport
   static Matcher downloadMatcher() {
     LogicMatchers.and(
         new ActionMatcher(GET, HEAD),
-        new TokenMatcher('/api/v1/cookbooks/{cookbook_name:.+}/versions/{version:.+}/download'),
+        new TokenMatcher('/api/v1/cookbooks/{cookbook:.+}/versions/{version:.+}/download'),
         new Matcher() {
           @Override
           boolean matches(final Context context) {
