@@ -131,7 +131,7 @@ abstract class ChefRecipeSupport
   }
 
   /**
-   * Matcher for cookbook download.
+   * Matcher for cookbook details.
    */
   static Matcher cookbookDetailsMatcher() {
     LogicMatchers.and(
@@ -141,6 +141,23 @@ abstract class ChefRecipeSupport
           @Override
           boolean matches(final Context context) {
             context.attributes.set(AssetKind.class, AssetKind.COOKBOOK_DETAILS)
+            return true
+          }
+        }
+    )
+  }
+
+  /**
+   * Matcher for cookbook list.
+   */
+  static Matcher cookbooksMatcher() {
+    LogicMatchers.and(
+        new ActionMatcher(GET, HEAD),
+        new TokenMatcher('/api/v1/cookbooks'),
+        new Matcher() {
+          @Override
+          boolean matches(final Context context) {
+            context.attributes.set(AssetKind.class, AssetKind.COOKBOOKS_LIST)
             return true
           }
         }

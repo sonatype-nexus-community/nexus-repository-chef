@@ -42,7 +42,7 @@ public class ChefPathUtils
     return context.getAttributes().require(TokenMatcher.State.class);
   }
 
-  public String buildAssetPath(final TokenMatcher.State state) {
+  public String buildCookbookPath(final TokenMatcher.State state) {
     String cookbook = cookbook(state);
     String version = version(state);
     return String.format("cookbooks/%s/%s/%s-%s.tar.gz", cookbook, version, cookbook, version);

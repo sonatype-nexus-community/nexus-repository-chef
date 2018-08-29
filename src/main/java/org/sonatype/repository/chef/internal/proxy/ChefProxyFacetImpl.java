@@ -30,15 +30,19 @@ import org.sonatype.nexus.repository.storage.StorageFacet;
 import org.sonatype.nexus.repository.storage.StorageTx;
 import org.sonatype.nexus.repository.storage.TempBlob;
 import org.sonatype.nexus.repository.transaction.TransactionalStoreBlob;
+import org.sonatype.nexus.repository.transaction.TransactionalTouchBlob;
 import org.sonatype.nexus.repository.transaction.TransactionalTouchMetadata;
 import org.sonatype.nexus.repository.view.Content;
 import org.sonatype.nexus.repository.view.Context;
+import org.sonatype.nexus.repository.view.Parameters;
 import org.sonatype.nexus.repository.view.Payload;
 import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher;
 import org.sonatype.nexus.transaction.UnitOfWork;
 import org.sonatype.repository.chef.internal.AssetKind;
 import org.sonatype.repository.chef.internal.util.ChefDataAccess;
 import org.sonatype.repository.chef.internal.util.ChefPathUtils;
+
+import com.google.common.base.Joiner;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.sonatype.nexus.repository.storage.AssetEntityAdapter.P_ASSET_KIND;
@@ -76,7 +80,9 @@ public class ChefProxyFacetImpl
     AssetKind assetKind = context.getAttributes().require(AssetKind.class);
     switch (assetKind) {
       case COOKBOOK:
-        return null;
+        TokenMatcher.State matcherState = chefPathUtils.matcherState(context);
+        return getAsset(chefPathUtils.buildCookbookPath(matcherState));
+      case COOKBOOKS_LIST:
       case COOKBOOK_DETAILS:
         return null;
       default:
@@ -94,8 +100,9 @@ public class ChefProxyFacetImpl
             COOKBOOK,
             chefPathUtils.cookbook(matcherState),
             chefPathUtils.version(matcherState),
-            chefPathUtils.buildAssetPath(matcherState));
+            chefPathUtils.buildCookbookPath(matcherState));
       case COOKBOOK_DETAILS:
+      case COOKBOOKS_LIST:
         return content;
       default:
         throw new IllegalStateException("Received an invalid AssetKind of type: " + assetKind.name());
@@ -147,6 +154,20 @@ public class ChefProxyFacetImpl
     return chefDataAccess.saveAsset(tx, asset, tempBlob, payload);
   }
 
+  @TransactionalTouchBlob
+  protected Content getAsset(final String name) {
+    StorageTx tx = UnitOfWork.currentTx();
+
+    Asset asset = chefDataAccess.findAsset(tx, tx.findBucket(getRepository()), name);
+    if (asset == null) {
+      return null;
+    }
+    if (asset.markAsDownloaded()) {
+      tx.saveAsset(asset);
+    }
+    return chefDataAccess.toContent(asset, tx.requireBlob(asset.requireBlobRef()));
+  }
+
   @Override
   protected void indicateVerified(final Context context, final Content content, final CacheInfo cacheInfo)
       throws IOException
@@ -170,7 +191,15 @@ public class ChefProxyFacetImpl
   }
 
   @Override
-  protected String getUrl(@Nonnull final Context context) {
-    return context.getRequest().getPath().substring(1);
+  protected String getUrl(@Nonnull final Context context)
+  {
+    String url = context.getRequest().getPath().substring(1);
+    AssetKind assetKind = context.getAttributes().require(AssetKind.class);
+    if (assetKind == AssetKind.COOKBOOKS_LIST) {
+      Parameters parameters = context.getRequest().getParameters();
+      url += "?" + Joiner.on("&").withKeyValueSeparator("=").join(parameters);
+    }
+
+    return url;
   }
 }
