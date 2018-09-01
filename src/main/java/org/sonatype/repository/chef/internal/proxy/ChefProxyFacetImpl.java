@@ -13,6 +13,8 @@
 package org.sonatype.repository.chef.internal.proxy;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -33,14 +35,19 @@ import org.sonatype.nexus.repository.transaction.TransactionalStoreBlob;
 import org.sonatype.nexus.repository.transaction.TransactionalTouchBlob;
 import org.sonatype.nexus.repository.transaction.TransactionalTouchMetadata;
 import org.sonatype.nexus.repository.view.Content;
+import org.sonatype.nexus.repository.view.ContentTypes;
 import org.sonatype.nexus.repository.view.Context;
 import org.sonatype.nexus.repository.view.Parameters;
 import org.sonatype.nexus.repository.view.Payload;
 import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher;
+import org.sonatype.nexus.repository.view.payloads.StringPayload;
 import org.sonatype.nexus.transaction.UnitOfWork;
 import org.sonatype.repository.chef.internal.AssetKind;
+import org.sonatype.repository.chef.internal.metadata.ChefAttributes;
+import org.sonatype.repository.chef.internal.util.ChefAttributeParser;
 import org.sonatype.repository.chef.internal.util.ChefDataAccess;
 import org.sonatype.repository.chef.internal.util.ChefPathUtils;
+import org.sonatype.repository.chef.internal.util.TempBlobJsonConverter;
 
 import com.google.common.base.Joiner;
 
@@ -61,11 +68,19 @@ public class ChefProxyFacetImpl
 
   private ChefPathUtils chefPathUtils;
 
+  private ChefAttributeParser chefAttributeParser;
+
+  private TempBlobJsonConverter tempBlobJsonConverter;
+
   @Inject
   public ChefProxyFacetImpl(final ChefDataAccess chefDataAccess,
-                            final ChefPathUtils chefPathUtils) {
+                            final ChefPathUtils chefPathUtils,
+                            final ChefAttributeParser chefAttributeParser,
+                            final TempBlobJsonConverter tempBlobJsonConverter) {
     this.chefDataAccess = checkNotNull(chefDataAccess);
     this.chefPathUtils = checkNotNull(chefPathUtils);
+    this.chefAttributeParser = checkNotNull(chefAttributeParser);
+    this.tempBlobJsonConverter = checkNotNull(tempBlobJsonConverter);
   }
 
   // HACK: Workaround for known CGLIB issue, forces an Import-Package for org.sonatype.nexus.repository.config
@@ -98,35 +113,50 @@ public class ChefProxyFacetImpl
         TokenMatcher.State matcherState = chefPathUtils.matcherState(context);
         return putCookbook(content,
             COOKBOOK,
-            chefPathUtils.cookbook(matcherState),
-            chefPathUtils.version(matcherState),
             chefPathUtils.buildCookbookPath(matcherState));
       case COOKBOOK_DETAILS:
-      case COOKBOOKS_LIST:
         return content;
+      case COOKBOOKS_LIST:
+        return rewriteCookbookList(content);
       default:
         throw new IllegalStateException("Received an invalid AssetKind of type: " + assetKind.name());
     }
   }
 
+  private Content rewriteCookbookList(final Content content) {
+    try {
+      Content newContent;
+      newContent = new Content(
+          new StringPayload(
+              tempBlobJsonConverter.rewriteJson(content),
+              ContentTypes.APPLICATION_JSON
+          )
+      );
+
+      return newContent;
+    }
+    catch (IOException | URISyntaxException ex) {
+      log.debug("Woops " + ex.toString());
+      return content;
+    }
+  }
+
   private Content putCookbook(final Content content,
                               final AssetKind assetKind,
-                              final String name,
-                              final String version,
                               final String assetPath)  throws IOException
   {
     StorageFacet storageFacet = facet(StorageFacet.class);
-    try (TempBlob tempBlob = storageFacet.createTempBlob(content, ChefDataAccess.HASH_ALGORITHMS)) {
-      return doPutCookbook(tempBlob, content, assetKind, name, version, assetPath);
+    try (TempBlob tempBlob = storageFacet.createTempBlob(content.openInputStream(), ChefDataAccess.HASH_ALGORITHMS)) {
+      ChefAttributes chefAttributes = chefAttributeParser.getAttributesFromInputStream(tempBlob.get());
+      return doPutCookbook(chefAttributes, tempBlob, content, assetKind, assetPath);
     }
   }
 
   @TransactionalStoreBlob
-  protected Content doPutCookbook(final TempBlob tempBlob,
+  protected Content doPutCookbook(final ChefAttributes chefAttributes,
+                                  final TempBlob tempBlob,
                                   final Payload payload,
                                   final AssetKind assetKind,
-                                  final String name,
-                                  final String version,
                                   final String assetPath) throws IOException
   {
     StorageTx tx = UnitOfWork.currentTx();
@@ -134,13 +164,13 @@ public class ChefProxyFacetImpl
 
     Component component = chefDataAccess.findComponent(tx,
         getRepository(),
-        name,
-        version);
+        chefAttributes.getName(),
+        chefAttributes.getVersion());
 
     if (component == null) {
       component = tx.createComponent(bucket, getRepository().getFormat())
-          .name(name)
-          .version(version);
+          .name(chefAttributes.getName())
+          .version(chefAttributes.getVersion());
     }
     tx.saveComponent(component);
 

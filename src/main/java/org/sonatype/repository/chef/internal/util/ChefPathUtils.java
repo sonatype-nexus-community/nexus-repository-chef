@@ -45,6 +45,7 @@ public class ChefPathUtils
   public String buildCookbookPath(final TokenMatcher.State state) {
     String cookbook = cookbook(state);
     String version = version(state);
+
     return String.format("cookbooks/%s/%s/%s-%s.tar.gz", cookbook, version, cookbook, version);
   }
 }
