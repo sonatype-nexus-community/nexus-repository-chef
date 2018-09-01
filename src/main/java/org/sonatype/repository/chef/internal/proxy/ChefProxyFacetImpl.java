@@ -13,7 +13,6 @@
 package org.sonatype.repository.chef.internal.proxy;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 
 import javax.annotation.Nonnull;
@@ -47,7 +46,7 @@ import org.sonatype.repository.chef.internal.metadata.ChefAttributes;
 import org.sonatype.repository.chef.internal.util.ChefAttributeParser;
 import org.sonatype.repository.chef.internal.util.ChefDataAccess;
 import org.sonatype.repository.chef.internal.util.ChefPathUtils;
-import org.sonatype.repository.chef.internal.util.TempBlobJsonConverter;
+import org.sonatype.repository.chef.internal.util.CookBookListAbsoluteUrlRemover;
 
 import com.google.common.base.Joiner;
 
@@ -70,17 +69,17 @@ public class ChefProxyFacetImpl
 
   private ChefAttributeParser chefAttributeParser;
 
-  private TempBlobJsonConverter tempBlobJsonConverter;
+  private CookBookListAbsoluteUrlRemover cookBookListAbsoluteUrlRemover;
 
   @Inject
   public ChefProxyFacetImpl(final ChefDataAccess chefDataAccess,
                             final ChefPathUtils chefPathUtils,
                             final ChefAttributeParser chefAttributeParser,
-                            final TempBlobJsonConverter tempBlobJsonConverter) {
+                            final CookBookListAbsoluteUrlRemover cookBookListAbsoluteUrlRemover) {
     this.chefDataAccess = checkNotNull(chefDataAccess);
     this.chefPathUtils = checkNotNull(chefPathUtils);
     this.chefAttributeParser = checkNotNull(chefAttributeParser);
-    this.tempBlobJsonConverter = checkNotNull(tempBlobJsonConverter);
+    this.cookBookListAbsoluteUrlRemover = checkNotNull(cookBookListAbsoluteUrlRemover);
   }
 
   // HACK: Workaround for known CGLIB issue, forces an Import-Package for org.sonatype.nexus.repository.config
@@ -128,7 +127,7 @@ public class ChefProxyFacetImpl
       Content newContent;
       newContent = new Content(
           new StringPayload(
-              tempBlobJsonConverter.rewriteJson(content),
+              cookBookListAbsoluteUrlRemover.rewriteJsonToRemoveAbsoluteUrls(content),
               ContentTypes.APPLICATION_JSON
           )
       );

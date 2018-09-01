@@ -24,9 +24,9 @@ import org.apache.http.client.utils.URIBuilder;
 
 @Named
 @Singleton
-public class TempBlobJsonConverter
+public class CookBookListAbsoluteUrlRemover
 {
-  public String rewriteJson(final Content content) throws IOException, URISyntaxException {
+  public String rewriteJsonToRemoveAbsoluteUrls(final Content content) throws IOException, URISyntaxException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     JsonFactory factory = new JsonFactory();
     JsonParser parser = factory.createParser(IOUtils.toString(content.openInputStream()));
