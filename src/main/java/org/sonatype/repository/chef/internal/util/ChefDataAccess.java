@@ -33,6 +33,8 @@ import org.sonatype.nexus.repository.storage.StorageTx;
 import org.sonatype.nexus.repository.view.Content;
 import org.sonatype.nexus.repository.view.Payload;
 import org.sonatype.nexus.repository.view.payloads.BlobPayload;
+import org.sonatype.nexus.repository.view.payloads.StreamPayload;
+import org.sonatype.nexus.repository.view.payloads.StreamPayload.InputStreamSupplier;
 
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
@@ -127,6 +129,18 @@ public class ChefDataAccess
   public Content toContent(final Asset asset, final Blob blob) {
     Content content = new Content(new BlobPayload(blob, asset.requireContentType()));
     Content.extractFromAsset(asset, HASH_ALGORITHMS, content.getAttributes());
+    return content;
+  }
+
+  /**
+   * Convert an InputStreamSupplier to {@link Content}.
+   *
+   * @return content of InputStreamSupplier
+   */
+  public Content toContent(final InputStreamSupplier is, final long size, final String contentType) {
+    Payload payload = new StreamPayload(is, size, contentType);
+    Content content = new Content(payload);
+
     return content;
   }
 }

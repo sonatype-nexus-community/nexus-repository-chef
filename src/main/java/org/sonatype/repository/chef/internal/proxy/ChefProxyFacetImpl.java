@@ -39,6 +39,7 @@ import org.sonatype.nexus.repository.view.Context;
 import org.sonatype.nexus.repository.view.Parameters;
 import org.sonatype.nexus.repository.view.Payload;
 import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher;
+import org.sonatype.nexus.repository.view.payloads.StreamPayload;
 import org.sonatype.nexus.repository.view.payloads.StringPayload;
 import org.sonatype.nexus.transaction.UnitOfWork;
 import org.sonatype.repository.chef.internal.AssetKind;
@@ -124,15 +125,7 @@ public class ChefProxyFacetImpl
 
   private Content rewriteCookbookList(final Content content) {
     try {
-      Content newContent;
-      newContent = new Content(
-          new StringPayload(
-              cookBookListAbsoluteUrlRemover.rewriteJsonToRemoveAbsoluteUrls(content),
-              ContentTypes.APPLICATION_JSON
-          )
-      );
-
-      return newContent;
+      return cookBookListAbsoluteUrlRemover.rewriteJsonToRemoveAbsoluteUrls(content);
     }
     catch (IOException | URISyntaxException ex) {
       log.debug("Woops " + ex.toString());
