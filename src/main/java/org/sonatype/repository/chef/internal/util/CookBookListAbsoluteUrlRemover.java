@@ -90,9 +90,17 @@ public class CookBookListAbsoluteUrlRemover
     reader.close();
     writer.close();
 
+    InputStream is = new FileInputStream(filePath);
+
+    File tempFile = new File(filePath);
+
+    long length = tempFile.length();
+
+    tempFile.delete();
+
     return chefDataAccess.toContent(
-        new FileInputStreamSupplier(new FileInputStream(filePath)),
-        new File(filePath).length(),
+        new FileInputStreamSupplier(is),
+        length,
         ContentTypes.APPLICATION_JSON
     );
   }
