@@ -34,20 +34,17 @@ import org.sonatype.nexus.repository.transaction.TransactionalStoreBlob;
 import org.sonatype.nexus.repository.transaction.TransactionalTouchBlob;
 import org.sonatype.nexus.repository.transaction.TransactionalTouchMetadata;
 import org.sonatype.nexus.repository.view.Content;
-import org.sonatype.nexus.repository.view.ContentTypes;
 import org.sonatype.nexus.repository.view.Context;
 import org.sonatype.nexus.repository.view.Parameters;
 import org.sonatype.nexus.repository.view.Payload;
 import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher;
-import org.sonatype.nexus.repository.view.payloads.StreamPayload;
-import org.sonatype.nexus.repository.view.payloads.StringPayload;
 import org.sonatype.nexus.transaction.UnitOfWork;
 import org.sonatype.repository.chef.internal.AssetKind;
 import org.sonatype.repository.chef.internal.metadata.ChefAttributes;
 import org.sonatype.repository.chef.internal.util.ChefAttributeParser;
 import org.sonatype.repository.chef.internal.util.ChefDataAccess;
 import org.sonatype.repository.chef.internal.util.ChefPathUtils;
-import org.sonatype.repository.chef.internal.util.CookBookListAbsoluteUrlRemover;
+import org.sonatype.repository.chef.internal.util.CookBookApiAbsoluteUrlRemover;
 
 import com.google.common.base.Joiner;
 
@@ -70,17 +67,17 @@ public class ChefProxyFacetImpl
 
   private ChefAttributeParser chefAttributeParser;
 
-  private CookBookListAbsoluteUrlRemover cookBookListAbsoluteUrlRemover;
+  private CookBookApiAbsoluteUrlRemover cookBookApiAbsoluteUrlRemover;
 
   @Inject
   public ChefProxyFacetImpl(final ChefDataAccess chefDataAccess,
                             final ChefPathUtils chefPathUtils,
                             final ChefAttributeParser chefAttributeParser,
-                            final CookBookListAbsoluteUrlRemover cookBookListAbsoluteUrlRemover) {
+                            final CookBookApiAbsoluteUrlRemover cookBookApiAbsoluteUrlRemover) {
     this.chefDataAccess = checkNotNull(chefDataAccess);
     this.chefPathUtils = checkNotNull(chefPathUtils);
     this.chefAttributeParser = checkNotNull(chefAttributeParser);
-    this.cookBookListAbsoluteUrlRemover = checkNotNull(cookBookListAbsoluteUrlRemover);
+    this.cookBookApiAbsoluteUrlRemover = checkNotNull(cookBookApiAbsoluteUrlRemover);
   }
 
   // HACK: Workaround for known CGLIB issue, forces an Import-Package for org.sonatype.nexus.repository.config
@@ -115,7 +112,7 @@ public class ChefProxyFacetImpl
             COOKBOOK,
             chefPathUtils.buildCookbookPath(matcherState));
       case COOKBOOK_DETAILS:
-        return content;
+        return rewriteCookbookDetail(content);
       case COOKBOOKS_LIST:
         return rewriteCookbookList(content);
       default:
@@ -123,9 +120,19 @@ public class ChefProxyFacetImpl
     }
   }
 
+  private Content rewriteCookbookDetail(final Content content) {
+    try {
+      return cookBookApiAbsoluteUrlRemover.rewriteCookBookDetailJsonToRemoveAbsoluteUrls(content);
+    }
+    catch (IOException | URISyntaxException ex) {
+      log.debug("Woops " + ex.toString());
+      return content;
+    }
+  }
+
   private Content rewriteCookbookList(final Content content) {
     try {
-      return cookBookListAbsoluteUrlRemover.rewriteJsonToRemoveAbsoluteUrls(content);
+      return cookBookApiAbsoluteUrlRemover.rewriteCookbookListJsonToRemoveAbsoluteUrls(content, "cookbook");
     }
     catch (IOException | URISyntaxException ex) {
       log.debug("Woops " + ex.toString());
