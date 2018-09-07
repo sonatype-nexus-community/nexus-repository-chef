@@ -21,7 +21,7 @@ import com.google.gson.stream.JsonWriter;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class JsonStreamer
+public abstract class JsonStreamer
 {
   private final JsonReader reader;
 
