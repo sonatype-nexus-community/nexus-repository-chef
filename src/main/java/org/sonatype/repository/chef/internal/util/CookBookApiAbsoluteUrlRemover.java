@@ -1,3 +1,15 @@
+/*
+ * Sonatype Nexus (TM) Open Source Version
+ * Copyright (c) 2018-present Sonatype, Inc.
+ * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
+ *
+ * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
+ * which accompanies this distribution and is available at http://www.eclipse.org/legal/epl-v10.html.
+ *
+ * Sonatype Nexus (TM) Professional Version is available from Sonatype, Inc. "Sonatype" and "Sonatype Nexus" are trademarks
+ * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
+ * Eclipse Foundation. All other trademarks are the property of their respective owners.
+ */
 package org.sonatype.repository.chef.internal.util;
 
 import java.io.BufferedInputStream;
@@ -8,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.UUID;
@@ -48,50 +59,9 @@ public class CookBookApiAbsoluteUrlRemover
     JsonReader reader = new JsonReader(new InputStreamReader(new BufferedInputStream(content.openInputStream())));
     JsonWriter writer = new JsonWriter(new OutputStreamWriter(file, "UTF-8"));
 
-    JsonToken token;
-    while (!(token = reader.peek()).equals(JsonToken.END_DOCUMENT)) {
-      switch (token) {
-        case BEGIN_OBJECT:
-          reader.beginObject();
-          writer.beginObject();
-          break;
-        case END_OBJECT:
-          reader.endObject();
-          writer.endObject();
-          break;
-        case BEGIN_ARRAY:
-          reader.beginArray();
-          writer.beginArray();
-          break;
-        case END_ARRAY:
-          reader.endArray();
-          writer.endArray();
-          break;
-        case STRING:
-          String value = reader.nextString();
-          writer.value(value);
-          break;
-        case NUMBER:
-          String number = reader.nextString();
-          writer.value(new BigDecimal(number));
-          break;
-        case NULL:
-          reader.nextNull();
-          writer.nullValue();
-          break;
-        case BOOLEAN:
-          writer.value(reader.nextBoolean());
-          break;
-        case NAME:
-          String name = reader.nextName();
-          writer.name(name);
-          JsonToken peek = reader.peek();
-          if (peek.equals(JsonToken.STRING) || (name.equals("versions") && peek.equals(JsonToken.BEGIN_ARRAY))) {
-            maybeSetUrlToRelativeCase(reader, writer, name);
-          }
-          break;
-      }
-    }
+    CookbookDetailsJsonStreamer streamer = new CookbookDetailsJsonStreamer(reader, writer);
+
+    streamer.parseJson();
 
     reader.close();
     writer.close();
@@ -118,40 +88,9 @@ public class CookBookApiAbsoluteUrlRemover
     JsonReader reader = new JsonReader(new InputStreamReader(new BufferedInputStream(content.openInputStream())));
     JsonWriter writer = new JsonWriter(new OutputStreamWriter(file, "UTF-8"));
 
-    JsonToken token;
-    while (!(token = reader.peek()).equals(JsonToken.END_DOCUMENT)) {
-      switch (token) {
-        case BEGIN_OBJECT:
-          reader.beginObject();
-          writer.beginObject();
-          break;
-        case END_OBJECT:
-          reader.endObject();
-          writer.endObject();
-          break;
-        case BEGIN_ARRAY:
-          reader.beginArray();
-          writer.beginArray();
-          break;
-        case END_ARRAY:
-          reader.endArray();
-          writer.endArray();
-          break;
-        case STRING:
-          String value = reader.nextString();
-          writer.value(value);
-          break;
-        case NUMBER:
-          String number = reader.nextString();
-          writer.value(new BigDecimal(number));
-          break;
-        case NAME:
-          String name = reader.nextName();
-          writer.name(name);
-          maybeSetUrlToRelative(reader, writer, name, urlTokenName);
-          break;
-      }
-    }
+    CookbookListJsonStreamer streamer = new CookbookListJsonStreamer(reader, writer);
+
+    streamer.parseJson();
 
     reader.close();
     writer.close();
@@ -171,8 +110,59 @@ public class CookBookApiAbsoluteUrlRemover
     );
   }
 
+  private class FileInputStreamSupplier
+    implements InputStreamSupplier
+  {
+    private InputStream is;
+
+    public FileInputStreamSupplier(final InputStream is) {
+      this.is = is;
+    }
+
+    @Override
+    public InputStream get() {
+      return this.is;
+    }
+  }
+
+  private class CookbookDetailsJsonStreamer
+    extends JsonStreamer
+  {
+    public CookbookDetailsJsonStreamer(final JsonReader reader, final JsonWriter writer) {
+      super(reader, writer);
+    }
+
+    @Override
+    public void getAndSetName() throws IOException {
+      String name = getReader().nextName();
+      getWriter().name(name);
+      JsonToken peek = getReader().peek();
+      if (peek.equals(JsonToken.STRING) || (name.equals("versions") && peek.equals(JsonToken.BEGIN_ARRAY))) {
+        maybeSetUrlToRelativeCase(getReader(), getWriter(), name);
+      }
+    }
+  }
+
+  private class CookbookListJsonStreamer
+    extends JsonStreamer
+  {
+    public CookbookListJsonStreamer(final JsonReader reader, final JsonWriter writer) {
+      super(reader, writer);
+    }
+
+    @Override
+    public void getAndSetName() throws IOException {
+      String name = getReader().nextName();
+      getWriter().name(name);
+      JsonToken peek = getReader().peek();
+      if (peek.equals(JsonToken.STRING) && "cookbook".equals(name)) {
+        maybeSetUrlToRelative(getReader(), getWriter());
+      }
+    }
+  }
+
   private void maybeSetUrlToRelativeCase(final JsonReader reader, final JsonWriter writer, final String name)
-      throws IOException, URISyntaxException
+      throws IOException
   {
     switch (name) {
       case "latest_version":
@@ -194,40 +184,26 @@ public class CookBookApiAbsoluteUrlRemover
   }
 
   private void doSetUrlAsRelative(final JsonReader reader, final JsonWriter writer)
-      throws IOException, URISyntaxException
+      throws IOException
   {
     String url = reader.nextString();
-    URI uri = new URIBuilder(url).build();
-    if (uri.isAbsolute()) {
-      String rightHand = uri.getPath();
-      writer.value(rightHand);
-    } else {
+    try {
+      URI uri = new URIBuilder(url).build();
+      if (uri.isAbsolute()) {
+        String rightHand = uri.getPath();
+        writer.value(rightHand);
+      }
+      else {
+        writer.value(url);
+      }
+    } catch (URISyntaxException ex) {
       writer.value(url);
     }
   }
 
-  private void maybeSetUrlToRelative(final JsonReader reader, final JsonWriter writer, final String name, final String urlTokenName)
-      throws IOException, URISyntaxException
+  private void maybeSetUrlToRelative(final JsonReader reader, final JsonWriter writer)
+      throws IOException
   {
-    if(urlTokenName.equals(name)) {
-      doSetUrlAsRelative(reader, writer);
-    } else {
-      writer.value(reader.nextString());
-    }
-  }
-
-  private class FileInputStreamSupplier
-    implements InputStreamSupplier
-  {
-    private InputStream is;
-
-    public FileInputStreamSupplier(final InputStream is) {
-      this.is = is;
-    }
-
-    @Override
-    public InputStream get() {
-      return this.is;
-    }
+    doSetUrlAsRelative(reader, writer);
   }
 }
