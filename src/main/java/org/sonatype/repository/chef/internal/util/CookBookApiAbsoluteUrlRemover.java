@@ -110,7 +110,7 @@ public class CookBookApiAbsoluteUrlRemover
     );
   }
 
-  public Content rewriteCookbookListJsonToRemoveAbsoluteUrls(final Content content, final String urlTokenName) throws IOException, URISyntaxException {
+  public Content rewriteCookbookListJsonToRemoveAbsoluteUrls(final Content content) throws IOException, URISyntaxException {
     String filePath = UUID.randomUUID().toString();
     FileOutputStream file = new FileOutputStream(filePath);
 

@@ -145,7 +145,7 @@ public class ChefProxyFacetImpl
 
   private Content rewriteCookbookList(final Content content) {
     try {
-      return cookBookApiAbsoluteUrlRemover.rewriteCookbookListJsonToRemoveAbsoluteUrls(content, "cookbook");
+      return cookBookApiAbsoluteUrlRemover.rewriteCookbookListJsonToRemoveAbsoluteUrls(content);
     }
     catch (IOException | URISyntaxException ex) {
       log.debug("Woops " + ex.toString());
