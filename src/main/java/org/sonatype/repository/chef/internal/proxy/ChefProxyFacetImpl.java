@@ -113,9 +113,7 @@ public class ChefProxyFacetImpl
             COOKBOOK,
             chefPathUtils.buildCookbookPath(matcherState));
       case COOKBOOK_DETAILS:
-        return rewriteMetadata(content, assetKind);
       case COOKBOOKS_LIST:
-        return rewriteMetadata(content, assetKind);
       case COOKBOOK_DETAIL_VERSION:
         return rewriteMetadata(content, assetKind);
       default:
