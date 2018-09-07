@@ -113,39 +113,26 @@ public class ChefProxyFacetImpl
             COOKBOOK,
             chefPathUtils.buildCookbookPath(matcherState));
       case COOKBOOK_DETAILS:
-        return rewriteCookbookDetail(content);
+        return rewriteMetadata(content, assetKind);
       case COOKBOOKS_LIST:
-        return rewriteCookbookList(content);
+        return rewriteMetadata(content, assetKind);
       case COOKBOOK_DETAIL_VERSION:
-        return rewriteCookbookDetailByVersion(content);
+        return rewriteMetadata(content, assetKind);
       default:
         throw new IllegalStateException("Received an invalid AssetKind of type: " + assetKind.name());
     }
   }
 
-  private Content rewriteCookbookDetailByVersion(final Content content) {
+  private Content rewriteMetadata(final Content content, final AssetKind assetKind) {
     try {
-      return cookBookApiAbsoluteUrlRemover.rewriteCookBookDetailByVersionJsonToRemoveAbsoluteUrls(content);
-    }
-    catch (IOException | URISyntaxException ex) {
-      log.debug("Woops " + ex.toString());
-      return content;
-    }
-  }
-
-  private Content rewriteCookbookDetail(final Content content) {
-    try {
-      return cookBookApiAbsoluteUrlRemover.rewriteCookBookDetailJsonToRemoveAbsoluteUrls(content);
-    }
-    catch (IOException | URISyntaxException ex) {
-      log.debug("Woops " + ex.toString());
-      return content;
-    }
-  }
-
-  private Content rewriteCookbookList(final Content content) {
-    try {
-      return cookBookApiAbsoluteUrlRemover.rewriteCookbookListJsonToRemoveAbsoluteUrls(content);
+      switch (assetKind) {
+        case COOKBOOK_DETAIL_VERSION:
+        case COOKBOOK_DETAILS:
+        case COOKBOOKS_LIST:
+          return cookBookApiAbsoluteUrlRemover.maybeRewriteCookbookApiResponseAbsoluteUrls(content, assetKind);
+        default:
+          return content;
+      }
     }
     catch (IOException | URISyntaxException ex) {
       log.debug("Woops " + ex.toString());

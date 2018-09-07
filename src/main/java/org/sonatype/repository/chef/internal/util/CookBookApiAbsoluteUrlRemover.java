@@ -32,6 +32,7 @@ import org.sonatype.goodies.common.ComponentSupport;
 import org.sonatype.nexus.repository.view.Content;
 import org.sonatype.nexus.repository.view.ContentTypes;
 import org.sonatype.nexus.repository.view.payloads.StreamPayload.InputStreamSupplier;
+import org.sonatype.repository.chef.internal.AssetKind;
 
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
@@ -52,74 +53,27 @@ public class CookBookApiAbsoluteUrlRemover
     this.chefDataAccess = checkNotNull(chefDataAccess);
   }
 
-  public Content rewriteCookBookDetailByVersionJsonToRemoveAbsoluteUrls(final Content content) throws IOException, URISyntaxException {
+  public Content maybeRewriteCookbookApiResponseAbsoluteUrls(final Content content, final AssetKind assetKind) throws IOException, URISyntaxException {
     String filePath = UUID.randomUUID().toString();
     FileOutputStream file = new FileOutputStream(filePath);
 
     JsonReader reader = new JsonReader(new InputStreamReader(new BufferedInputStream(content.openInputStream())));
     JsonWriter writer = new JsonWriter(new OutputStreamWriter(file, "UTF-8"));
 
-    CookbookDetailsByVersionJsonStreamer streamer = new CookbookDetailsByVersionJsonStreamer(reader, writer);
-
-    streamer.parseJson();
-
-    reader.close();
-    writer.close();
-
-    InputStream is = new FileInputStream(filePath);
-
-    File tempFile = new File(filePath);
-
-    long length = tempFile.length();
-
-    tempFile.delete();
-
-    return chefDataAccess.toContent(
-        new FileInputStreamSupplier(is),
-        length,
-        ContentTypes.APPLICATION_JSON
-    );
-  }
-
-  public Content rewriteCookBookDetailJsonToRemoveAbsoluteUrls(final Content content) throws IOException, URISyntaxException {
-    String filePath = UUID.randomUUID().toString();
-    FileOutputStream file = new FileOutputStream(filePath);
-
-    JsonReader reader = new JsonReader(new InputStreamReader(new BufferedInputStream(content.openInputStream())));
-    JsonWriter writer = new JsonWriter(new OutputStreamWriter(file, "UTF-8"));
-
-    CookbookDetailsJsonStreamer streamer = new CookbookDetailsJsonStreamer(reader, writer);
-
-    streamer.parseJson();
-
-    reader.close();
-    writer.close();
-
-    InputStream is = new FileInputStream(filePath);
-
-    File tempFile = new File(filePath);
-
-    long length = tempFile.length();
-
-    tempFile.delete();
-
-    return chefDataAccess.toContent(
-        new FileInputStreamSupplier(is),
-        length,
-        ContentTypes.APPLICATION_JSON
-    );
-  }
-
-  public Content rewriteCookbookListJsonToRemoveAbsoluteUrls(final Content content) throws IOException, URISyntaxException {
-    String filePath = UUID.randomUUID().toString();
-    FileOutputStream file = new FileOutputStream(filePath);
-
-    JsonReader reader = new JsonReader(new InputStreamReader(new BufferedInputStream(content.openInputStream())));
-    JsonWriter writer = new JsonWriter(new OutputStreamWriter(file, "UTF-8"));
-
-    CookbookListJsonStreamer streamer = new CookbookListJsonStreamer(reader, writer);
-
-    streamer.parseJson();
+    switch (assetKind) {
+      case COOKBOOKS_LIST:
+        CookbookListJsonStreamer listStreamer = new CookbookListJsonStreamer(reader, writer);
+        listStreamer.parseJson();
+        break;
+      case COOKBOOK_DETAILS:
+        CookbookDetailsJsonStreamer detailsStreamer = new CookbookDetailsJsonStreamer(reader, writer);
+        detailsStreamer.parseJson();
+        break;
+      case COOKBOOK_DETAIL_VERSION:
+        CookbookDetailsByVersionJsonStreamer detailsByVersionStreamer = new CookbookDetailsByVersionJsonStreamer(reader, writer);
+        detailsByVersionStreamer.parseJson();
+        break;
+    }
 
     reader.close();
     writer.close();
