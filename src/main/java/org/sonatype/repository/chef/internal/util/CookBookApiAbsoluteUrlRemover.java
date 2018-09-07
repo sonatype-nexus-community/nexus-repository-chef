@@ -52,6 +52,35 @@ public class CookBookApiAbsoluteUrlRemover
     this.chefDataAccess = checkNotNull(chefDataAccess);
   }
 
+  public Content rewriteCookBookDetailByVersionJsonToRemoveAbsoluteUrls(final Content content) throws IOException, URISyntaxException {
+    String filePath = UUID.randomUUID().toString();
+    FileOutputStream file = new FileOutputStream(filePath);
+
+    JsonReader reader = new JsonReader(new InputStreamReader(new BufferedInputStream(content.openInputStream())));
+    JsonWriter writer = new JsonWriter(new OutputStreamWriter(file, "UTF-8"));
+
+    CookbookDetailsByVersionJsonStreamer streamer = new CookbookDetailsByVersionJsonStreamer(reader, writer);
+
+    streamer.parseJson();
+
+    reader.close();
+    writer.close();
+
+    InputStream is = new FileInputStream(filePath);
+
+    File tempFile = new File(filePath);
+
+    long length = tempFile.length();
+
+    tempFile.delete();
+
+    return chefDataAccess.toContent(
+        new FileInputStreamSupplier(is),
+        length,
+        ContentTypes.APPLICATION_JSON
+    );
+  }
+
   public Content rewriteCookBookDetailJsonToRemoveAbsoluteUrls(final Content content) throws IOException, URISyntaxException {
     String filePath = UUID.randomUUID().toString();
     FileOutputStream file = new FileOutputStream(filePath);
@@ -125,6 +154,24 @@ public class CookBookApiAbsoluteUrlRemover
     }
   }
 
+  private class CookbookDetailsByVersionJsonStreamer
+      extends JsonStreamer
+  {
+    public CookbookDetailsByVersionJsonStreamer(final JsonReader reader, final JsonWriter writer) {
+      super(reader, writer);
+    }
+
+    @Override
+    public void getAndSetName() throws IOException {
+      String name = getReader().nextName();
+      getWriter().name(name);
+      JsonToken peek = getReader().peek();
+      if (peek.equals(JsonToken.STRING) || (name.equals("cookbook") || name.equals("file"))) {
+        doSetUrlAsRelative(getReader(), getWriter());
+      }
+    }
+  }
+
   private class CookbookDetailsJsonStreamer
     extends JsonStreamer
   {
@@ -191,6 +238,7 @@ public class CookBookApiAbsoluteUrlRemover
       URI uri = new URIBuilder(url).build();
       if (uri.isAbsolute()) {
         String rightHand = uri.getPath();
+
         writer.value(rightHand);
       }
       else {

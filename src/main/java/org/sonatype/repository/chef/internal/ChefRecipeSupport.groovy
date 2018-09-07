@@ -133,6 +133,23 @@ abstract class ChefRecipeSupport
   /**
    * Matcher for cookbook details.
    */
+  static Matcher cookbookDetailVersionMatcher() {
+    LogicMatchers.and(
+        new ActionMatcher(GET, HEAD),
+        new TokenMatcher('/api/v1/cookbooks/{cookbook:.+}/versions/{version:.+}'),
+        new Matcher() {
+          @Override
+          boolean matches(final Context context) {
+            context.attributes.set(AssetKind.class, AssetKind.COOKBOOK_DETAIL_VERSION)
+            return true
+          }
+        }
+    )
+  }
+
+  /**
+   * Matcher for cookbook details.
+   */
   static Matcher cookbookDetailsMatcher() {
     LogicMatchers.and(
         new ActionMatcher(GET, HEAD),

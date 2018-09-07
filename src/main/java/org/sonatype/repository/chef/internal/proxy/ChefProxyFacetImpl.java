@@ -96,6 +96,7 @@ public class ChefProxyFacetImpl
         return getAsset(chefPathUtils.buildCookbookPath(matcherState));
       case COOKBOOKS_LIST:
       case COOKBOOK_DETAILS:
+      case COOKBOOK_DETAIL_VERSION:
         return null;
       default:
         throw new IllegalStateException("Received an invalid AssetKind of type: " + assetKind.name());
@@ -115,8 +116,20 @@ public class ChefProxyFacetImpl
         return rewriteCookbookDetail(content);
       case COOKBOOKS_LIST:
         return rewriteCookbookList(content);
+      case COOKBOOK_DETAIL_VERSION:
+        return rewriteCookbookDetailByVersion(content);
       default:
         throw new IllegalStateException("Received an invalid AssetKind of type: " + assetKind.name());
+    }
+  }
+
+  private Content rewriteCookbookDetailByVersion(final Content content) {
+    try {
+      return cookBookApiAbsoluteUrlRemover.rewriteCookBookDetailByVersionJsonToRemoveAbsoluteUrls(content);
+    }
+    catch (IOException | URISyntaxException ex) {
+      log.debug("Woops " + ex.toString());
+      return content;
     }
   }
 
