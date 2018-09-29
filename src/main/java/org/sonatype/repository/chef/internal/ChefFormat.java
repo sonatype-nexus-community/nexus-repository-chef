@@ -19,6 +19,8 @@ import org.sonatype.nexus.repository.Format;
 
 /**
  * Chef repository format.
+ *
+ * @since 0.0.1
  */
 @Named(ChefFormat.NAME)
 @Singleton

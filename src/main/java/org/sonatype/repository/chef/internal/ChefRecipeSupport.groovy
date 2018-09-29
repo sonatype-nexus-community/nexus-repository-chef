@@ -48,6 +48,8 @@ import static org.sonatype.nexus.repository.http.HttpMethods.HEAD
 
 /**
  * Support for Chef recipes.
+ *
+ * @since 0.0.1
  */
 abstract class ChefRecipeSupport
     extends RecipeSupport

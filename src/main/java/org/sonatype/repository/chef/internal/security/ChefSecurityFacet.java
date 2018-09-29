@@ -22,6 +22,8 @@ import org.sonatype.nexus.repository.security.VariableResolverAdapter;
 
 /**
  * Chef format security facet.
+ *
+ * @since 0.0.1
  */
 @Named
 public class ChefSecurityFacet

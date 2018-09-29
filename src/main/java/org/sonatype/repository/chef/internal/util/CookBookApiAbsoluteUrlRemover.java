@@ -41,6 +41,9 @@ import org.apache.http.client.utils.URIBuilder;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * @since 0.0.1
+ */
 @Named
 @Singleton
 public class CookBookApiAbsoluteUrlRemover

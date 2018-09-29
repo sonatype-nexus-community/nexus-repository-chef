@@ -20,6 +20,9 @@ import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * @since 0.0.1
+ */
 @Named
 @Singleton
 public class ChefPathUtils

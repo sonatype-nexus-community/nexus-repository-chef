@@ -43,6 +43,9 @@ import static java.util.Collections.singletonList;
 import static org.sonatype.nexus.repository.storage.ComponentEntityAdapter.P_VERSION;
 import static org.sonatype.nexus.repository.storage.MetadataNodeEntityAdapter.P_NAME;
 
+/**
+ * @since 0.0.1
+ */
 @Named
 public class ChefDataAccess
 {
