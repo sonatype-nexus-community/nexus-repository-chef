@@ -27,7 +27,7 @@ public abstract class JsonStreamer
 
   private final JsonWriter writer;
 
-  public JsonStreamer(final JsonReader reader, final JsonWriter writer) {
+  JsonStreamer(final JsonReader reader, final JsonWriter writer) {
     this.reader = checkNotNull(reader);
     this.writer = checkNotNull(writer);
   }

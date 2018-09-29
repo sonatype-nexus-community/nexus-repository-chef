@@ -29,6 +29,7 @@ public enum AssetKind
   COOKBOOK_DETAIL_VERSION(CacheControllerHolder.METADATA),
   COOKBOOK_DETAILS(CacheControllerHolder.METADATA),
   COOKBOOKS_LIST(CacheControllerHolder.METADATA),
+  COOKBOOKS_SEARCH(CacheControllerHolder.METADATA),
   COOKBOOK(CacheControllerHolder.CONTENT);
 
   private final CacheType cacheType;

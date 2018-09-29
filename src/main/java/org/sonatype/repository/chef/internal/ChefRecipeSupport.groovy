@@ -181,5 +181,22 @@ abstract class ChefRecipeSupport
     )
   }
 
+  /**
+   * Matcher for cookbook list.
+   */
+  static Matcher cookbookSearchMatcher() {
+    LogicMatchers.and(
+        new ActionMatcher(GET, HEAD),
+        new TokenMatcher('/api/v1/search'),
+        new Matcher() {
+          @Override
+          boolean matches(final Context context) {
+            context.attributes.set(AssetKind.class, AssetKind.COOKBOOKS_SEARCH)
+            return true
+          }
+        }
+    )
+  }
+
 
 }

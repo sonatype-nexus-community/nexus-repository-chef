@@ -97,6 +97,7 @@ public class ChefProxyFacetImpl
       case COOKBOOKS_LIST:
       case COOKBOOK_DETAILS:
       case COOKBOOK_DETAIL_VERSION:
+      case COOKBOOKS_SEARCH:
         return null;
       default:
         throw new IllegalStateException("Received an invalid AssetKind of type: " + assetKind.name());
@@ -106,6 +107,9 @@ public class ChefProxyFacetImpl
   @Override
   protected Content store(final Context context, final Content content) throws IOException {
     AssetKind assetKind = context.getAttributes().require(AssetKind.class);
+    log.info(assetKind.name());
+    log.info(context.getRequest().getPath());
+    log.info(context.getRequest().getParameters().toString());
     switch(assetKind) {
       case COOKBOOK:
         TokenMatcher.State matcherState = chefPathUtils.matcherState(context);
@@ -115,6 +119,7 @@ public class ChefProxyFacetImpl
       case COOKBOOK_DETAILS:
       case COOKBOOKS_LIST:
       case COOKBOOK_DETAIL_VERSION:
+      case COOKBOOKS_SEARCH:
         return rewriteMetadata(content, assetKind);
       default:
         throw new IllegalStateException("Received an invalid AssetKind of type: " + assetKind.name());
@@ -127,6 +132,7 @@ public class ChefProxyFacetImpl
         case COOKBOOK_DETAIL_VERSION:
         case COOKBOOK_DETAILS:
         case COOKBOOKS_LIST:
+        case COOKBOOKS_SEARCH:
           return cookBookApiAbsoluteUrlRemover.maybeRewriteCookbookApiResponseAbsoluteUrls(content, assetKind);
         default:
           return content;
@@ -222,9 +228,14 @@ public class ChefProxyFacetImpl
   {
     String url = context.getRequest().getPath().substring(1);
     AssetKind assetKind = context.getAttributes().require(AssetKind.class);
-    if (assetKind == AssetKind.COOKBOOKS_LIST) {
-      Parameters parameters = context.getRequest().getParameters();
-      url += "?" + Joiner.on("&").withKeyValueSeparator("=").join(parameters);
+    switch (assetKind) {
+      case COOKBOOKS_LIST:
+      case COOKBOOKS_SEARCH:
+        Parameters parameters = context.getRequest().getParameters();
+        url += "?" + Joiner.on("&").withKeyValueSeparator("=").join(parameters);
+        break;
+      default:
+        break;
     }
 
     return url;

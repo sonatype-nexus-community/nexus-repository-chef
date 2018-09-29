@@ -73,6 +73,10 @@ public class CookBookApiAbsoluteUrlRemover
         CookbookDetailsByVersionJsonStreamer detailsByVersionStreamer = new CookbookDetailsByVersionJsonStreamer(reader, writer);
         detailsByVersionStreamer.parseJson();
         break;
+      case COOKBOOKS_SEARCH:
+        CookbooksSearchJsonStreamer cookbooksSearchJsonStreamer = new CookbooksSearchJsonStreamer(reader, writer);
+        cookbooksSearchJsonStreamer.parseJson();
+        break;
     }
 
     reader.close();
@@ -105,6 +109,24 @@ public class CookBookApiAbsoluteUrlRemover
     @Override
     public InputStream get() {
       return this.is;
+    }
+  }
+
+  private class CookbooksSearchJsonStreamer
+      extends JsonStreamer
+  {
+    public CookbooksSearchJsonStreamer(final JsonReader reader, final JsonWriter writer) {
+      super(reader, writer);
+    }
+
+    @Override
+    public void getAndSetName() throws IOException {
+      String name = getReader().nextName();
+      getWriter().name(name);
+      JsonToken peek = getReader().peek();
+      if (peek.equals(JsonToken.STRING) || (name.equals("cookbook"))) {
+        doSetUrlAsRelative(getReader(), getWriter());
+      }
     }
   }
 
