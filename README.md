@@ -14,7 +14,9 @@
 -->
 # Nexus Repository Chef Format
 
-[![Build Status](https://travis-ci.org/sonatype-nexus-community/nexus-repository-chef.svg?branch=master)](https://travis-ci.org/sonatype-nexus-community/nexus-repository-chef) [![Join the chat at https://gitter.im/sonatype/nexus-developers](https://badges.gitter.im/sonatype/nexus-developers.svg)](https://gitter.im/sonatype/nexus-developers?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/sonatype-nexus-community/nexus-repository-chef.svg?branch=master)](https://travis-ci.org/sonatype-nexus-community/nexus-repository-chef) 
+[![Join the chat at https://gitter.im/sonatype/nexus-developers](https://badges.gitter.im/sonatype/nexus-developers.svg)](https://gitter.im/sonatype/nexus-developers?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![DepShield Badge](https://depshield.sonatype.org/badges/sonatype-nexus-community/nexus-repository-chef/depshield.svg)](https://depshield.github.io)
 
 # Table Of Contents
 
