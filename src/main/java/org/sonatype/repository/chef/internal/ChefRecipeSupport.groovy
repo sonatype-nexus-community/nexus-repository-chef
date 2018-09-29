@@ -197,6 +197,4 @@ abstract class ChefRecipeSupport
         }
     )
   }
-
-
 }
