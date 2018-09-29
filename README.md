@@ -78,6 +78,8 @@ table will be updated to indicate which version of Nexus Repository it will func
 available basis, as this is community supported. If you see a new version of Nexus Repository, go ahead and update the
 plugin and send us a PR after testing it out!
 
+All released versions can be found [here](https://github.com/sonatype-nexus-community/nexus-repository-chef/releases).
+
 ## Features Implemented In This Plugin 
 
 | Feature | Implemented          |
