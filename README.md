@@ -22,6 +22,8 @@
    * [Requirements](#requirements)
    * [Building](#building)
 * [Using Chef with Nexus Repository Manger 3](#using-chef-with-nexus-repository-manager-3)
+* [Compatibility with Nexus Repository Manager 3 Versions](#compatibility-with-nexus-repository-manager-3-versions)
+* [Features Implemented In This Plugin](#features-implemented-in-this-plugin)
 * [Installing the plugin](#installing-the-plugin)
    * [Temporary Install](#temporary-install)
    * [(more) Permanent Install](#more-permanent-install)
@@ -59,7 +61,7 @@ For further information like how to persist volumes check out [the GitHub repo f
 
 The application will now be available from your browser at http://localhost:8081
 
-## Using chef With Nexus Repository Manager 3
+## Using Chef With Nexus Repository Manager 3
 
 [We have detailed instructions on how to get started here!](docs/CHEF_USER_DOCUMENTATION.md)
 
