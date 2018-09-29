@@ -107,9 +107,6 @@ public class ChefProxyFacetImpl
   @Override
   protected Content store(final Context context, final Content content) throws IOException {
     AssetKind assetKind = context.getAttributes().require(AssetKind.class);
-    log.info(assetKind.name());
-    log.info(context.getRequest().getPath());
-    log.info(context.getRequest().getParameters().toString());
     switch(assetKind) {
       case COOKBOOK:
         TokenMatcher.State matcherState = chefPathUtils.matcherState(context);
