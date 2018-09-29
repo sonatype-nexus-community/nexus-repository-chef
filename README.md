@@ -18,7 +18,131 @@
 
 # Table Of Contents
 
-To come
+* [Developing](#developing)
+   * [Requirements](#requirements)
+   * [Building](#building)
+* [Using Chef with Nexus Repository Manger 3](#using-chef-with-nexus-repository-manager-3)
+* [Installing the plugin](#installing-the-plugin)
+   * [Temporary Install](#temporary-install)
+   * [(more) Permanent Install](#more-permanent-install)
+   * [(most) Permament Install](#most-permanent-install)
+* [The Fine Print](#the-fine-print)
+* [Getting Help](#getting-help)
+
+## Developing
+
+### Requirements
+
+* [Apache Maven 3.3.3+](https://maven.apache.org/install.html)
+* [Java 8+](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
+* Network access to https://repository.sonatype.org/content/groups/sonatype-public-grid
+
+Also, there is a good amount of information available at [Bundle Development](https://help.sonatype.com/display/NXRM3/Bundle+Development)
+
+### Building
+
+To build the project and generate the bundle use Maven
+
+    mvn clean package
+
+If everything checks out, the bundle for chef should be available in the `target` folder
+
+#### Build with Docker
+
+`docker build -t nexus-repository-chef:0.0.1 .`
+
+#### Run as a Docker container
+
+`docker run -d -p 8081:8081 --name nexus nexus-repository-chef:0.0.1` 
+
+For further information like how to persist volumes check out [the GitHub repo for our official image](https://github.com/sonatype/docker-nexus3).
+
+The application will now be available from your browser at http://localhost:8081
+
+## Using chef With Nexus Repository Manager 3
+
+[We have detailed instructions on how to get started here!](docs/CHEF_USER_DOCUMENTATION.md)
+
+## Compatibility with Nexus Repository Manager 3 Versions
+
+The table below outlines what version of Nexus Repository the plugin was built against
+
+| Plugin Version | Nexus Repository Version |
+|----------------|--------------------------|
+| v0.0.1         | 3.13.0-01                |
+
+If a new version of Nexus Repository is released and the plugin needs changes, a new release will be made, and this
+table will be updated to indicate which version of Nexus Repository it will function against. This is done on a time 
+available basis, as this is community supported. If you see a new version of Nexus Repository, go ahead and update the
+plugin and send us a PR after testing it out!
+
+## Features Implemented In This Plugin 
+
+| Feature | Implemented        |
+|---------|--------------------|
+| Proxy   | :heavy_check_mark: |
+| Hosted  |                    |
+| Group   |                    |
+
+## Installing the plugin
+
+There are a range of options for installing the chef plugin. You'll need to build it first, and
+then install the plugin with the options shown below:
+
+### Temporary Install
+
+Installations done via the Karaf console will be wiped out with every restart of Nexus Repository. This is a
+good installation path if you are just testing or doing development on the plugin.
+
+* Enable Nexus console: edit `<nexus_dir>/bin/nexus.vmoptions` and change `karaf.startLocalConsole`  to `true`.
+
+  More details here: [Bundle Development](https://help.sonatype.com/display/NXRM3/Bundle+Development+Overview)
+
+* Run Nexus' console:
+  ```
+  # sudo su - nexus
+  $ cd <nexus_dir>/bin
+  $ ./nexus run
+  > bundle:install file:///tmp/nexus-repository-chef-0.0.1.jar
+  > bundle:list
+  ```
+  (look for org.sonatype.nexus.plugins:nexus-repository-chef ID, should be the last one)
+  ```
+  > bundle:start <org.sonatype.nexus.plugins:nexus-repository-chef ID>
+  ```
+
+### (more) Permanent Install
+
+For more permanent installs of the nexus-repository-chef plugin, follow these instructions:
+
+* Copy the bundle (nexus-repository-chef-0.0.1.jar) into <nexus_dir>/deploy
+
+This will cause the plugin to be loaded with each restart of Nexus Repository. As well, this folder is monitored
+by Nexus Repository and the plugin should load within 60 seconds of being copied there if Nexus Repository
+is running. You will still need to start the bundle using the karaf commands mentioned in the temporary install.
+
+### (most) Permanent Install
+
+If you are trying to use the chef plugin permanently, it likely makes more sense to do the following:
+
+* Copy the bundle into `<nexus_dir>/system/org/sonatype/nexus/plugins/nexus-repository-chef/0.0.1/nexus-repository-chef-0.0.1.jar`
+* Make the following additions marked with + to `<nexus_dir>/system/org/sonatype/nexus/assemblies/nexus-core-feature/3.x.y/nexus-core-feature-3.x.y-features.xml`
+
+   ```
+         <feature prerequisite="false" dependency="false">nexus-repository-rubygems</feature>
+   +     <feature prerequisite="false" dependency="false">nexus-repository-chef</feature>
+         <feature prerequisite="false" dependency="false">nexus-repository-gitlfs</feature>
+     </feature>
+   ```
+   And
+   ```
+   + <feature name="nexus-repository-chef" description="org.sonatype.nexus.plugins:nexus-repository-chef" version="0.0.1">
+   +     <details>org.sonatype.nexus.plugins:nexus-repository-chef</details>
+   +     <bundle>mvn:org.sonatype.nexus.plugins/nexus-repository-chef/0.0.1</bundle>
+   + </feature>
+    </features>
+   ```
+This will cause the plugin to be loaded and started with each startup of Nexus Repository.
 
 ## The Fine Print
 
