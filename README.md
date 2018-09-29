@@ -80,11 +80,13 @@ plugin and send us a PR after testing it out!
 
 ## Features Implemented In This Plugin 
 
-| Feature | Implemented        |
-|---------|--------------------|
-| Proxy   | :heavy_check_mark: |
-| Hosted  |                    |
-| Group   |                    |
+| Feature | Implemented          |
+|---------|----------------------|
+| Proxy   | :heavy_check_mark: * |
+| Hosted  |                      |
+| Group   |                      |
+
+`* tested primarily against the Chef Supermarket, not guaranteed to work on the wide wild world of Chef repositories.`
 
 ## Installing the plugin
 
