@@ -35,18 +35,21 @@ public class ChefAttributeParser
 {
   private TgzParser tgzParser;
 
+  private ObjectMapper objectMapper;
+
   @Inject
-  public ChefAttributeParser(final TgzParser tgzParser) {
+  public ChefAttributeParser(final TgzParser tgzParser,
+                             final ObjectMapper objectMapper) {
     this.tgzParser = checkNotNull(tgzParser);
+    this.objectMapper = checkNotNull(objectMapper);
   }
 
   public ChefAttributes getAttributesFromInputStream(final InputStream inputStream) throws IOException {
     try (InputStream is = tgzParser.getMetadataFromInputStream(inputStream)) {
-      ObjectMapper objectMapper = new ObjectMapper();
 
       String metadataJson = IOUtils.toString(is);
 
-      ChefAttributes chefAttributes = objectMapper.readValue(metadataJson, ChefAttributes.class);
+      ChefAttributes chefAttributes = this.objectMapper.readValue(metadataJson, ChefAttributes.class);
 
       return chefAttributes;
     }
