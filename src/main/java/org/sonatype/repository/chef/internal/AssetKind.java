@@ -14,7 +14,6 @@ package org.sonatype.repository.chef.internal;
 
 import javax.annotation.Nonnull;
 
-import org.sonatype.nexus.repository.cache.CacheControllerHolder;
 import org.sonatype.nexus.repository.cache.CacheControllerHolder.CacheType;
 
 import static org.sonatype.nexus.repository.cache.CacheControllerHolder.*;
