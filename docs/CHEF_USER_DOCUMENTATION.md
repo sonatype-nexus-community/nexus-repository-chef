@@ -36,13 +36,25 @@ details. Minimal configuration steps are:
 
 Configuring Chef to use Nexus Repository is fairly easy! 
 
-You'll need to have Chef installed, and as well install Knife, for interaction with the Supermarket
-
-TODO: Fill in how to install Chef and Knife
+You'll need to have Chef installed, and as well install Knife, for interaction with the Supermarket.
 
 Once you have Chef up and running you'll want to run commands similar to the following:
 
-TODO: Fill in how to configure Knife and Chef for use against Nexus Repository
+You'll need to create a `knife.rb` file at the following location if it does not exist:
+
+`~/.chef/knife.rb`
+
+In this file you'll need to add:
+
+`knife[:supermarket_site] = 'http://nexushostname:nexusport/repository/chef-proxy-name'`
+
+As well, you will need to run:
+
+`knife configure`
+
+When asked for the chef server URL, please enter the url for your chef supermarket proxy.
+
+Once you've done this, you should be ready to COOK like a CHEF!
 
 ### Browsing Chef Repository Packages
 
