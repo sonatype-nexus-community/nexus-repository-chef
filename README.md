@@ -92,6 +92,22 @@ All released versions can be found [here](https://github.com/sonatype-nexus-comm
 
 `* tested primarily against the Chef Supermarket, not guaranteed to work on the wide wild world of Chef repositories.`
 
+### Knife Commands Supported
+
+#### Proxy
+
+| Plugin Version               | Nexus Repository Version |
+|------------------------------|--------------------------|
+| `knife supermarket install`  | :heavy_check_mark:       |
+| `knife supermarket download` | :heavy_check_mark:       |
+| `knife supermarket list`     | :heavy_check_mark:       |
+| `knife supermarket search`   | :heavy_check_mark:       |
+| `knife supermarket show`     | :heavy_check_mark:       |
+| `knife supermarket share`    | *                        |
+| `knife supermarket unshare`  | *                        |
+
+`* these commands are not applicable to a proxy`
+
 ## Installing the plugin
 
 There are a range of options for installing the chef plugin. You'll need to build it first, and
