@@ -17,6 +17,8 @@ import javax.annotation.Nonnull;
 import org.sonatype.nexus.repository.cache.CacheControllerHolder;
 import org.sonatype.nexus.repository.cache.CacheControllerHolder.CacheType;
 
+import static org.sonatype.nexus.repository.cache.CacheControllerHolder.*;
+
 /**
  * Asset kinds for Chef
  *
@@ -25,11 +27,11 @@ import org.sonatype.nexus.repository.cache.CacheControllerHolder.CacheType;
  */
 public enum AssetKind
 {
-  COOKBOOK_DETAIL_VERSION(CacheControllerHolder.METADATA),
-  COOKBOOK_DETAILS(CacheControllerHolder.METADATA),
-  COOKBOOKS_LIST(CacheControllerHolder.METADATA),
-  COOKBOOKS_SEARCH(CacheControllerHolder.METADATA),
-  COOKBOOK(CacheControllerHolder.CONTENT);
+  COOKBOOK_DETAIL_VERSION(METADATA),
+  COOKBOOK_DETAILS(METADATA),
+  COOKBOOKS_LIST(METADATA),
+  COOKBOOKS_SEARCH(METADATA),
+  COOKBOOK(CONTENT);
 
   private final CacheType cacheType;
 
