@@ -26,6 +26,7 @@
 * [Using Chef with Nexus Repository Manger 3](#using-chef-with-nexus-repository-manager-3)
 * [Compatibility with Nexus Repository Manager 3 Versions](#compatibility-with-nexus-repository-manager-3-versions)
 * [Features Implemented In This Plugin](#features-implemented-in-this-plugin)
+   * [Supported Knife Commands](#supported-knife-commands)
 * [Installing the plugin](#installing-the-plugin)
    * [Temporary Install](#temporary-install)
    * [(more) Permanent Install](#more-permanent-install)
@@ -92,7 +93,7 @@ All released versions can be found [here](https://github.com/sonatype-nexus-comm
 
 `* tested primarily against the Chef Supermarket, not guaranteed to work on the wide wild world of Chef repositories.`
 
-### Knife Commands Supported
+### Supported Knife Commands
 
 #### Proxy
 
