@@ -119,11 +119,11 @@ then install the plugin with the options shown below:
 Installations done via the Karaf console will be wiped out with every restart of Nexus Repository. This is a
 good installation path if you are just testing or doing development on the plugin.
 
-* Enable Nexus console: edit `<nexus_dir>/bin/nexus.vmoptions` and change `karaf.startLocalConsole`  to `true`.
+* Enable Nexus Repo console: edit `<nexus_dir>/bin/nexus.vmoptions` and change `karaf.startLocalConsole`  to `true`.
 
   More details here: [Bundle Development](https://help.sonatype.com/display/NXRM3/Bundle+Development+Overview)
 
-* Run Nexus' console:
+* Run Nexus Repo console:
   ```
   # sudo su - nexus
   $ cd <nexus_dir>/bin
