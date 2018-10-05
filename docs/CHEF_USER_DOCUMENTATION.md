@@ -26,7 +26,7 @@ at [the Chef Supermarket](https://supermarket.chef.io/)
 
 To proxy a Chef repository, you simply create a new 'chef (proxy)' as documented in 
 [Repository Management](https://help.sonatype.com/display/NXRM3/Configuration#Configuration-RepositoryManagement) in
-details. Minimal configuration steps are:
+detail. Minimal configuration steps are:
 
 - Define 'Name'
 - Define URL for 'Remote storage' e.g. [https://supermarket.chef.io/](https://supermarket.chef.io/)
