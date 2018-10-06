@@ -10,7 +10,7 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.repository.chef.internal.util;
+package org.sonatype.nexus.repository.chef.internal.util;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -29,10 +29,10 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.sonatype.goodies.common.ComponentSupport;
+import org.sonatype.nexus.repository.chef.internal.AssetKind;
 import org.sonatype.nexus.repository.view.Content;
 import org.sonatype.nexus.repository.view.ContentTypes;
 import org.sonatype.nexus.repository.view.payloads.StreamPayload.InputStreamSupplier;
-import org.sonatype.repository.chef.internal.AssetKind;
 
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;

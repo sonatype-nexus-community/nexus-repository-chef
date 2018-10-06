@@ -10,7 +10,7 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.repository.chef.internal.proxy;
+package org.sonatype.nexus.repository.chef.internal.proxy;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -21,6 +21,11 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import org.sonatype.nexus.repository.cache.CacheInfo;
+import org.sonatype.nexus.repository.chef.internal.AssetKind;
+import org.sonatype.nexus.repository.chef.internal.metadata.ChefAttributes;
+import org.sonatype.nexus.repository.chef.internal.util.ChefDataAccess;
+import org.sonatype.nexus.repository.chef.internal.util.ChefPathUtils;
+import org.sonatype.nexus.repository.chef.internal.util.CookBookApiAbsoluteUrlRemover;
 import org.sonatype.nexus.repository.config.Configuration;
 import org.sonatype.nexus.repository.proxy.ProxyFacet;
 import org.sonatype.nexus.repository.proxy.ProxyFacetSupport;
@@ -39,18 +44,12 @@ import org.sonatype.nexus.repository.view.Parameters;
 import org.sonatype.nexus.repository.view.Payload;
 import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher;
 import org.sonatype.nexus.transaction.UnitOfWork;
-import org.sonatype.repository.chef.internal.AssetKind;
-import org.sonatype.repository.chef.internal.metadata.ChefAttributes;
-import org.sonatype.repository.chef.internal.util.ChefAttributeParser;
-import org.sonatype.repository.chef.internal.util.ChefDataAccess;
-import org.sonatype.repository.chef.internal.util.ChefPathUtils;
-import org.sonatype.repository.chef.internal.util.CookBookApiAbsoluteUrlRemover;
+import org.sonatype.nexus.repository.chef.internal.util.ChefAttributeParser;
 
 import com.google.common.base.Joiner;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.sonatype.nexus.repository.storage.AssetEntityAdapter.P_ASSET_KIND;
-import static org.sonatype.repository.chef.internal.AssetKind.COOKBOOK;
 
 /**
  * Chef {@link ProxyFacet} implementation.
@@ -111,7 +110,7 @@ public class ChefProxyFacetImpl
       case COOKBOOK:
         TokenMatcher.State matcherState = chefPathUtils.matcherState(context);
         return putCookbook(content,
-            COOKBOOK,
+            AssetKind.COOKBOOK,
             chefPathUtils.buildCookbookPath(matcherState));
       case COOKBOOK_DETAILS:
       case COOKBOOKS_LIST:

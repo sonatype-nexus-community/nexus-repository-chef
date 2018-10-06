@@ -10,26 +10,26 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.repository.chef.internal.ui;
+package org.sonatype.nexus.repository.chef.internal;
 
-import javax.annotation.Priority;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import org.sonatype.nexus.rapture.UiPluginDescriptorSupport;
+import org.sonatype.nexus.repository.Format;
 
 /**
+ * Chef repository format.
+ *
  * @since 0.0.1
  */
-@Named
+@Named(ChefFormat.NAME)
 @Singleton
-@Priority(Integer.MAX_VALUE - 200)
-public class UiPluginDescriptorImpl
-    extends UiPluginDescriptorSupport
+public class ChefFormat
+    extends Format
 {
-  public UiPluginDescriptorImpl() {
-    super("nexus-repository-chef");
-    setNamespace("NX.chef");
-    setConfigClassName("NX.chef.app.PluginConfig");
+  public static final String NAME = "chef";
+
+  public ChefFormat() {
+    super(NAME);
   }
 }

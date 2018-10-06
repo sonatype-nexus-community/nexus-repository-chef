@@ -10,7 +10,7 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.repository.chef.internal
+package org.sonatype.nexus.repository.chef.internal
 
 import javax.inject.Inject
 import javax.inject.Provider
@@ -41,7 +41,7 @@ import org.sonatype.nexus.repository.view.handlers.TimingHandler
 import org.sonatype.nexus.repository.view.matchers.ActionMatcher
 import org.sonatype.nexus.repository.view.matchers.logic.LogicMatchers
 import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher
-import org.sonatype.repository.chef.internal.security.ChefSecurityFacet
+import org.sonatype.nexus.repository.chef.internal.security.ChefSecurityFacet
 
 import static org.sonatype.nexus.repository.http.HttpMethods.GET
 import static org.sonatype.nexus.repository.http.HttpMethods.HEAD

@@ -10,36 +10,26 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.repository.chef.internal;
+package org.sonatype.nexus.repository.chef.internal.ui;
 
-import javax.annotation.Nonnull;
+import javax.annotation.Priority;
+import javax.inject.Named;
+import javax.inject.Singleton;
 
-import org.sonatype.nexus.repository.cache.CacheControllerHolder.CacheType;
-
-import static org.sonatype.nexus.repository.cache.CacheControllerHolder.*;
+import org.sonatype.nexus.rapture.UiPluginDescriptorSupport;
 
 /**
- * Asset kinds for Chef
- *
- * Examples of all can be found at: https://github.com/kubernetes/helm/blob/master/docs/chart_repository.md#the-chart-repository-structure
  * @since 0.0.1
  */
-public enum AssetKind
+@Named
+@Singleton
+@Priority(Integer.MAX_VALUE - 200)
+public class UiPluginDescriptorImpl
+    extends UiPluginDescriptorSupport
 {
-  COOKBOOK_DETAIL_VERSION(METADATA),
-  COOKBOOK_DETAILS(METADATA),
-  COOKBOOKS_LIST(METADATA),
-  COOKBOOKS_SEARCH(METADATA),
-  COOKBOOK(CONTENT);
-
-  private final CacheType cacheType;
-
-  AssetKind(final CacheType cacheType) {
-    this.cacheType = cacheType;
-  }
-
-  @Nonnull
-  public CacheType getCacheType() {
-    return cacheType;
+  public UiPluginDescriptorImpl() {
+    super("nexus-repository-chef");
+    setNamespace("NX.chef");
+    setConfigClassName("NX.chef.app.PluginConfig");
   }
 }
