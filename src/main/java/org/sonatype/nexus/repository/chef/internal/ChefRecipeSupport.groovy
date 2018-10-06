@@ -41,6 +41,8 @@ import org.sonatype.nexus.repository.view.handlers.TimingHandler
 
 /**
  * Support for Chef recipes.
+ *
+ * @since 0.0.1
  */
 abstract class ChefRecipeSupport
     extends RecipeSupport
