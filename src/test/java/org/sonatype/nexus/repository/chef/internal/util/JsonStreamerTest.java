@@ -75,8 +75,9 @@ public class JsonStreamerTest
     setUp(getClass().getResourceAsStream(COOKBOOK_LIST));
     underTest.parseJson(
         (name, token) ->
-            "cookbook".equals(name),
-        this::doSetUrlAsRelative);
+            token.equals(JsonToken.STRING) && "cookbook".equals(name),
+        (r, w, name) ->
+            doSetUrlAsRelative(r, w));
     reader.close();
     writer.close();
 
@@ -86,29 +87,30 @@ public class JsonStreamerTest
         false);
   }
 
-  //@Test
-  //public void rewriteCookBookDetails() throws Exception {
-  //  setUp(getClass().getResourceAsStream(COOKBOOK_DETAILS));
-  //  underTest.parseJson(
-  //      (name, token) ->
-  //          (name.equals("versions") && token.equals(JsonToken.BEGIN_ARRAY)),
-  //      this::maybeSetUrlToRelativeCase);
-  //  reader.close();
-  //  writer.close();
-  //
-  //  JSONAssert.assertEquals(
-  //      baos.toString(),
-  //      IOUtils.toString(getClass().getResourceAsStream(COOKBOOK_DETAILS_EXPECTED)),
-  //      false);
-  //}
+  @Test
+  public void rewriteCookBookDetails() throws Exception {
+    setUp(getClass().getResourceAsStream(COOKBOOK_DETAILS));
+    underTest.parseJson(
+        (name, token) ->
+            token.equals(JsonToken.STRING) || (name.equals("versions") && token.equals(JsonToken.BEGIN_ARRAY)),
+        this::maybeSetUrlToRelativeCase);
+    reader.close();
+    writer.close();
+
+    JSONAssert.assertEquals(
+        baos.toString(),
+        IOUtils.toString(getClass().getResourceAsStream(COOKBOOK_DETAILS_EXPECTED)),
+        false);
+  }
 
   @Test
   public void rewriteCookBookDetailsByVersion() throws Exception {
     setUp(getClass().getResourceAsStream(COOKBOOK_DETAILS_BY_VERSION));
     underTest.parseJson(
         (name, token) ->
-            (name.equals("cookbook") || name.equals("file")),
-        this::doSetUrlAsRelative);
+            token.equals(JsonToken.STRING) || (name.equals("cookbook") || name.equals("file")),
+        (r, w, name) ->
+            doSetUrlAsRelative(r, w));
     reader.close();
     writer.close();
 
@@ -123,8 +125,9 @@ public class JsonStreamerTest
     setUp(getClass().getResourceAsStream(COOKBOOK_SEARCH));
     underTest.parseJson(
         (name, token) ->
-            "cookbook".equals(name),
-        this::doSetUrlAsRelative);
+            token.equals(JsonToken.STRING) || "cookbook".equals(name),
+        (r, w, name) ->
+            doSetUrlAsRelative(r, w));
     reader.close();
     writer.close();
 

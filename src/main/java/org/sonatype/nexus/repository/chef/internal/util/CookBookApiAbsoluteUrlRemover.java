@@ -70,26 +70,30 @@ public class CookBookApiAbsoluteUrlRemover
       case COOKBOOKS_LIST:
         jsonStreamer.parseJson(
             (name, token) ->
-                "cookbook".equals(name),
-                this::doSetUrlAsRelative);
+                token.equals(JsonToken.STRING) && "cookbook".equals(name),
+            (r, w, name) ->
+                doSetUrlAsRelative(r, w));
         break;
       case COOKBOOK_DETAILS:
-        //jsonStreamer.parseJson(
-        //    (name, token) ->
-        //        (name.equals("versions") && token.equals(JsonToken.BEGIN_ARRAY)),
-        //    this::maybeSetUrlToRelativeCase);
+        jsonStreamer.parseJson(
+            (name, token) ->
+                token.equals(JsonToken.STRING) || (name.equals("versions") && token.equals(JsonToken.BEGIN_ARRAY)),
+            (r, w, name) ->
+                maybeSetUrlToRelativeCase(r, w, name));
         break;
       case COOKBOOK_DETAIL_VERSION:
         jsonStreamer.parseJson(
             (name, token) ->
-                (name.equals("cookbook") || name.equals("file")),
-            this::doSetUrlAsRelative);
+                token.equals(JsonToken.STRING) || (name.equals("cookbook") || name.equals("file")),
+            (r, w, name) ->
+                doSetUrlAsRelative(r, w));
         break;
       case COOKBOOKS_SEARCH:
         jsonStreamer.parseJson(
             (name, token) ->
-                "cookbook".equals(name),
-            this::doSetUrlAsRelative);
+                token.equals(JsonToken.STRING) || "cookbook".equals(name),
+            (r, w, name) ->
+                doSetUrlAsRelative(r, w));
         break;
     }
 

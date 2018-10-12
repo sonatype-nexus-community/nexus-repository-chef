@@ -89,8 +89,8 @@ public class JsonStreamer
 
       getWriter().name(name);
       JsonToken peek = getReader().peek();
-      if (peek.equals(JsonToken.STRING) && condition.apply(name, peek)) {
-        remover.remove(getReader(), getWriter());
+      if (condition.apply(name, peek)) {
+        remover.remove(getReader(), getWriter(), name);
       }
     }
     catch (Exception ex) {

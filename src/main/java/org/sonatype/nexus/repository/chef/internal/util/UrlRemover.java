@@ -17,5 +17,5 @@ import com.google.gson.stream.JsonWriter;
 
 public interface UrlRemover
 {
-  void remove(JsonReader reader, JsonWriter writer);
+  void remove(JsonReader reader, JsonWriter writer, String name);
 }

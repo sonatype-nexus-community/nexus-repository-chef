@@ -13,7 +13,7 @@
   "up_for_adoption": null,
   "deprecated": false,
   "versions": [
-    "api/v1/cookbooks/apt/versions/7.1.1",
+    "/api/v1/cookbooks/apt/versions/7.1.1",
     "/api/v1/cookbooks/apt/versions/7.1.0",
     "/api/v1/cookbooks/apt/versions/7.0.0",
     "/api/v1/cookbooks/apt/versions/6.1.4",
