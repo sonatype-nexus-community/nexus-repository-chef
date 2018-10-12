@@ -36,11 +36,11 @@ public class JsonStreamer
     this.writer = checkNotNull(writer);
   }
 
-  public JsonReader getReader() {
+  private JsonReader getReader() {
     return reader;
   }
 
-  public JsonWriter getWriter() {
+  private JsonWriter getWriter() {
     return writer;
   }
 
@@ -81,7 +81,7 @@ public class JsonStreamer
     }
   }
 
-  public void getAndSetName(final BiFunction<String, JsonToken, Boolean> condition,
+  private void getAndSetName(final BiFunction<String, JsonToken, Boolean> condition,
                             final UrlRemover remover)
   {
     try {
@@ -98,40 +98,40 @@ public class JsonStreamer
     }
   }
 
-  public void getAndSetBoolean() throws IOException {
+  private void getAndSetBoolean() throws IOException {
     writer.value(reader.nextBoolean());
   }
 
-  public void getAndSetNull() throws IOException {
+  private void getAndSetNull() throws IOException {
     reader.nextNull();
     writer.nullValue();
   }
 
-  public void getAndSetNumber() throws IOException {
+  private void getAndSetNumber() throws IOException {
     writer.value(new BigDecimal(reader.nextString()));
   }
 
-  public void getAndSetString() throws IOException {
+  private void getAndSetString() throws IOException {
     String value = reader.nextString();
     writer.value(value);
   }
 
-  public void getAndSetEndArray() throws IOException {
+  private void getAndSetEndArray() throws IOException {
     reader.endArray();
     writer.endArray();
   }
 
-  public void getAndSetBeginArray() throws IOException {
+  private void getAndSetBeginArray() throws IOException {
     reader.beginArray();
     writer.beginArray();
   }
 
-  public void getAndSetEndObject() throws IOException {
+  private void getAndSetEndObject() throws IOException {
     reader.endObject();
     writer.endObject();
   }
 
-  public void getAndSetBeginObject() throws IOException {
+  private void getAndSetBeginObject() throws IOException {
     reader.beginObject();
     writer.beginObject();
   }
