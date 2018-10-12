@@ -1,0 +1,126 @@
+{
+  "start": 0,
+  "total": 3772,
+  "items": [
+    {
+      "cookbook_name": "1password",
+      "cookbook_maintainer": "jtimberman",
+      "cookbook_description": "Installs 1password",
+      "cookbook": "/api/v1/cookbooks/1password"
+    },
+    {
+      "cookbook_name": "301",
+      "cookbook_maintainer": "markhuge",
+      "cookbook_description": "Installs/Configures 301",
+      "cookbook": "/api/v1/cookbooks/301"
+    },
+    {
+      "cookbook_name": "3cx",
+      "cookbook_maintainer": "obay",
+      "cookbook_description": "Installs/Configures 3cx",
+      "cookbook": "/api/v1/cookbooks/3cx"
+    },
+    {
+      "cookbook_name": "7dtd",
+      "cookbook_maintainer": "gregf",
+      "cookbook_description": "Installs/Configures the 7 Days To Die server",
+      "cookbook": "/api/v1/cookbooks/7dtd"
+    },
+    {
+      "cookbook_name": "7-zip",
+      "cookbook_maintainer": "sneal",
+      "cookbook_description": "Installs/Configures the 7-zip file archiver",
+      "cookbook": "/api/v1/cookbooks/7-zip"
+    },
+    {
+      "cookbook_name": "aag_infoblox",
+      "cookbook_maintainer": "alaskaair",
+      "cookbook_description": "Custom Resource for Infoblox",
+      "cookbook": "/api/v1/cookbooks/aag_infoblox"
+    },
+    {
+      "cookbook_name": "abiquo",
+      "cookbook_maintainer": "nacx",
+      "cookbook_description": "Installs and configures an Abiquo platform",
+      "cookbook": "/api/v1/cookbooks/abiquo"
+    },
+    {
+      "cookbook_name": "acadock",
+      "cookbook_maintainer": "soulou",
+      "cookbook_description": "Installs/Configures acadock monitoring tool",
+      "cookbook": "/api/v1/cookbooks/acadock"
+    },
+    {
+      "cookbook_name": "accel-ppp",
+      "cookbook_maintainer": "frostyslav",
+      "cookbook_description": "Installs/Configures accel-pppd",
+      "cookbook": "/api/v1/cookbooks/accel-ppp"
+    },
+    {
+      "cookbook_name": "accounts",
+      "cookbook_maintainer": "vvk",
+      "cookbook_description": "System Accounts management",
+      "cookbook": "/api/v1/cookbooks/accounts"
+    },
+    {
+      "cookbook_name": "accumulator",
+      "cookbook_maintainer": "kisoku",
+      "cookbook_description": "Installs/Configures accumulator",
+      "cookbook": "/api/v1/cookbooks/accumulator"
+    },
+    {
+      "cookbook_name": "acd",
+      "cookbook_maintainer": "ryanh",
+      "cookbook_description": "Installs/Configures acd",
+      "cookbook": "/api/v1/cookbooks/acd"
+    },
+    {
+      "cookbook_name": "ack",
+      "cookbook_maintainer": "cap10morgan",
+      "cookbook_description": "Installs ack, a utility for quickly performing recursive searches of directory trees of text files (such as source code).",
+      "cookbook": "/api/v1/cookbooks/ack"
+    },
+    {
+      "cookbook_name": "acl",
+      "cookbook_maintainer": "lalaguna",
+      "cookbook_description": "Setup POSIX Access Control Lists (ACLs)",
+      "cookbook": "/api/v1/cookbooks/acl"
+    },
+    {
+      "cookbook_name": "acme",
+      "cookbook_maintainer": "thoutenbos",
+      "cookbook_description": "ACME client cookbook for free and trusted SSL/TLS certificates from Let's Encrypt",
+      "cookbook": "/api/v1/cookbooks/acme"
+    },
+    {
+      "cookbook_name": "acmesmith",
+      "cookbook_maintainer": "crahul",
+      "cookbook_description": "Installs/Configures acmesmith",
+      "cookbook": "/api/v1/cookbooks/acmesmith"
+    },
+    {
+      "cookbook_name": "activelamp_composer",
+      "cookbook_maintainer": "bez",
+      "cookbook_description": "Provides the `composer` resource.",
+      "cookbook": "/api/v1/cookbooks/activelamp_composer"
+    },
+    {
+      "cookbook_name": "activelamp_drupal",
+      "cookbook_maintainer": "bez",
+      "cookbook_description": "Cookbook for deploying Drupal websites and for installing Drush",
+      "cookbook": "/api/v1/cookbooks/activelamp_drupal"
+    },
+    {
+      "cookbook_name": "activelamp_symfony",
+      "cookbook_maintainer": "bez",
+      "cookbook_description": "Cookbook for deploying Symfony2 projects.",
+      "cookbook": "/api/v1/cookbooks/activelamp_symfony"
+    },
+    {
+      "cookbook_name": "activemq",
+      "cookbook_maintainer": "chef",
+      "cookbook_description": "Installs activemq and sets it up as service",
+      "cookbook": "/api/v1/cookbooks/activemq"
+    }
+  ]
+}

@@ -56,29 +56,40 @@ public class CookBookApiAbsoluteUrlRemover
     this.chefDataAccess = checkNotNull(chefDataAccess);
   }
 
-  public Content maybeRewriteCookbookApiResponseAbsoluteUrls(final Content content, final AssetKind assetKind) throws IOException, URISyntaxException {
+  public Content maybeRewriteCookbookApiResponseAbsoluteUrls(final Content content,
+                                                             final AssetKind assetKind) throws IOException, URISyntaxException
+  {
     String filePath = UUID.randomUUID().toString();
     FileOutputStream file = new FileOutputStream(filePath);
 
     JsonReader reader = new JsonReader(new InputStreamReader(new BufferedInputStream(content.openInputStream())));
     JsonWriter writer = new JsonWriter(new OutputStreamWriter(file, "UTF-8"));
 
+    JsonStreamer jsonStreamer = new JsonStreamer(reader, writer);
     switch (assetKind) {
       case COOKBOOKS_LIST:
-        CookbookListJsonStreamer listStreamer = new CookbookListJsonStreamer(reader, writer);
-        listStreamer.parseJson();
+        jsonStreamer.parseJson(
+            (name, token) ->
+                "cookbook".equals(name),
+                this::doSetUrlAsRelative);
         break;
       case COOKBOOK_DETAILS:
-        CookbookDetailsJsonStreamer detailsStreamer = new CookbookDetailsJsonStreamer(reader, writer);
-        detailsStreamer.parseJson();
+        //jsonStreamer.parseJson(
+        //    (name, token) ->
+        //        (name.equals("versions") && token.equals(JsonToken.BEGIN_ARRAY)),
+        //    this::maybeSetUrlToRelativeCase);
         break;
       case COOKBOOK_DETAIL_VERSION:
-        CookbookDetailsByVersionJsonStreamer detailsByVersionStreamer = new CookbookDetailsByVersionJsonStreamer(reader, writer);
-        detailsByVersionStreamer.parseJson();
+        jsonStreamer.parseJson(
+            (name, token) ->
+                (name.equals("cookbook") || name.equals("file")),
+            this::doSetUrlAsRelative);
         break;
       case COOKBOOKS_SEARCH:
-        CookbooksSearchJsonStreamer cookbooksSearchJsonStreamer = new CookbooksSearchJsonStreamer(reader, writer);
-        cookbooksSearchJsonStreamer.parseJson();
+        jsonStreamer.parseJson(
+            (name, token) ->
+                "cookbook".equals(name),
+            this::doSetUrlAsRelative);
         break;
     }
 
@@ -115,122 +126,53 @@ public class CookBookApiAbsoluteUrlRemover
     }
   }
 
-  private class CookbooksSearchJsonStreamer
-      extends JsonStreamer
-  {
-    public CookbooksSearchJsonStreamer(final JsonReader reader, final JsonWriter writer) {
-      super(reader, writer);
-    }
-
-    @Override
-    public void getAndSetName() throws IOException {
-      String name = getReader().nextName();
-      getWriter().name(name);
-      JsonToken peek = getReader().peek();
-      if (peek.equals(JsonToken.STRING) || (name.equals("cookbook"))) {
-        doSetUrlAsRelative(getReader(), getWriter());
-      }
-    }
-  }
-
-  private class CookbookDetailsByVersionJsonStreamer
-      extends JsonStreamer
-  {
-    public CookbookDetailsByVersionJsonStreamer(final JsonReader reader, final JsonWriter writer) {
-      super(reader, writer);
-    }
-
-    @Override
-    public void getAndSetName() throws IOException {
-      String name = getReader().nextName();
-      getWriter().name(name);
-      JsonToken peek = getReader().peek();
-      if (peek.equals(JsonToken.STRING) || (name.equals("cookbook") || name.equals("file"))) {
-        doSetUrlAsRelative(getReader(), getWriter());
-      }
-    }
-  }
-
-  private class CookbookDetailsJsonStreamer
-    extends JsonStreamer
-  {
-    public CookbookDetailsJsonStreamer(final JsonReader reader, final JsonWriter writer) {
-      super(reader, writer);
-    }
-
-    @Override
-    public void getAndSetName() throws IOException {
-      String name = getReader().nextName();
-      getWriter().name(name);
-      JsonToken peek = getReader().peek();
-      if (peek.equals(JsonToken.STRING) || (name.equals("versions") && peek.equals(JsonToken.BEGIN_ARRAY))) {
-        maybeSetUrlToRelativeCase(getReader(), getWriter(), name);
-      }
-    }
-  }
-
-  private class CookbookListJsonStreamer
-    extends JsonStreamer
-  {
-    public CookbookListJsonStreamer(final JsonReader reader, final JsonWriter writer) {
-      super(reader, writer);
-    }
-
-    @Override
-    public void getAndSetName() throws IOException {
-      String name = getReader().nextName();
-      getWriter().name(name);
-      JsonToken peek = getReader().peek();
-      if (peek.equals(JsonToken.STRING) && "cookbook".equals(name)) {
-        maybeSetUrlToRelative(getReader(), getWriter());
-      }
-    }
-  }
-
   private void maybeSetUrlToRelativeCase(final JsonReader reader, final JsonWriter writer, final String name)
-      throws IOException
   {
-    switch (name) {
-      case "latest_version":
-        doSetUrlAsRelative(reader, writer);
-        break;
-      case "versions":
-        reader.beginArray();
-        writer.beginArray();
-        while (reader.hasNext()) {
+    try {
+      switch (name) {
+        case "latest_version":
           doSetUrlAsRelative(reader, writer);
-        }
-        reader.endArray();
-        writer.endArray();
-        break;
-      default:
-        writer.value(reader.nextString());
-        break;
+          break;
+        case "versions":
+          reader.beginArray();
+          writer.beginArray();
+          while (reader.hasNext()) {
+            doSetUrlAsRelative(reader, writer);
+          }
+          reader.endArray();
+          writer.endArray();
+          break;
+        default:
+          writer.value(reader.nextString());
+          break;
+      }
+    }
+    catch (IOException ex) {
+      throw new RuntimeException("Oops");
     }
   }
 
   private void doSetUrlAsRelative(final JsonReader reader, final JsonWriter writer)
-      throws IOException
   {
-    String url = reader.nextString();
     try {
-      URI uri = new URIBuilder(url).build();
-      if (uri.isAbsolute()) {
-        String rightHand = uri.getPath();
+      String url = reader.nextString();
+      try {
+        URI uri = new URIBuilder(url).build();
+        if (uri.isAbsolute()) {
+          String rightHand = uri.getPath();
 
-        writer.value(rightHand);
+          writer.value(rightHand);
+        }
+        else {
+          writer.value(url);
+        }
       }
-      else {
+      catch (URISyntaxException ex) {
         writer.value(url);
       }
-    } catch (URISyntaxException ex) {
-      writer.value(url);
     }
-  }
-
-  private void maybeSetUrlToRelative(final JsonReader reader, final JsonWriter writer)
-      throws IOException
-  {
-    doSetUrlAsRelative(reader, writer);
+    catch (IOException ex) {
+      throw new RuntimeException("Oops");
+    }
   }
 }

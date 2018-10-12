@@ -14,6 +14,7 @@ package org.sonatype.nexus.repository.chef.internal.util;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.function.BiFunction;
 
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
@@ -24,7 +25,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * @since 0.0.1
  */
-public abstract class JsonStreamer
+public class JsonStreamer
 {
   private final JsonReader reader;
 
@@ -43,7 +44,9 @@ public abstract class JsonStreamer
     return writer;
   }
 
-  public void parseJson() throws IOException {
+  public void parseJson(final BiFunction<String, JsonToken, Boolean> condition,
+                        final UrlRemover remover) throws IOException
+  {
     JsonToken token;
     while (!(token = reader.peek()).equals(JsonToken.END_DOCUMENT)) {
       switch (token) {
@@ -72,14 +75,27 @@ public abstract class JsonStreamer
           getAndSetBoolean();
           break;
         case NAME:
-          getAndSetName();
+          getAndSetName(condition, remover);
           break;
       }
     }
   }
 
-  public void getAndSetName() throws IOException {
-    writer.name(reader.nextName());
+  public void getAndSetName(final BiFunction<String, JsonToken, Boolean> condition,
+                            final UrlRemover remover)
+  {
+    try {
+      String name = getReader().nextName();
+
+      getWriter().name(name);
+      JsonToken peek = getReader().peek();
+      if (peek.equals(JsonToken.STRING) && condition.apply(name, peek)) {
+        remover.remove(getReader(), getWriter());
+      }
+    }
+    catch (Exception ex) {
+      throw new RuntimeException("Could not rewrite");
+    }
   }
 
   public void getAndSetBoolean() throws IOException {

@@ -22,7 +22,6 @@ import javax.inject.Singleton;
 import org.sonatype.nexus.repository.chef.internal.metadata.ChefAttributes;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.IOUtils;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -46,10 +45,7 @@ public class ChefAttributeParser
 
   public ChefAttributes getAttributesFromInputStream(final InputStream inputStream) throws IOException {
     try (InputStream is = tgzParser.getMetadataFromInputStream(inputStream)) {
-
-      String metadataJson = IOUtils.toString(is);
-
-      ChefAttributes chefAttributes = this.objectMapper.readValue(metadataJson, ChefAttributes.class);
+      ChefAttributes chefAttributes = this.objectMapper.readValue(is, ChefAttributes.class);
 
       return chefAttributes;
     }
