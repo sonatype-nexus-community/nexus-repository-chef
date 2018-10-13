@@ -15,6 +15,9 @@ package org.sonatype.nexus.repository.chef.internal.util;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 
+/**
+ * @since 0.0.1
+ */
 public interface UrlRemover
 {
   void remove(JsonReader reader, JsonWriter writer, String name);
