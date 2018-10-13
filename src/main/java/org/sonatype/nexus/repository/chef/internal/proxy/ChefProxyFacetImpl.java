@@ -20,6 +20,7 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.sonatype.nexus.repository.cache.CacheControllerHolder;
 import org.sonatype.nexus.repository.cache.CacheInfo;
 import org.sonatype.nexus.repository.chef.internal.AssetKind;
 import org.sonatype.nexus.repository.chef.internal.metadata.ChefAttributes;
@@ -89,13 +90,17 @@ public class ChefProxyFacetImpl
   @Override
   protected Content getCachedContent(final Context context) throws IOException {
     AssetKind assetKind = context.getAttributes().require(AssetKind.class);
+    TokenMatcher.State matcherState = chefPathUtils.matcherState(context);
     switch (assetKind) {
       case COOKBOOK:
-        TokenMatcher.State matcherState = chefPathUtils.matcherState(context);
         return getAsset(chefPathUtils.buildCookbookPath(matcherState));
       case COOKBOOKS_LIST:
+        return getAsset(chefPathUtils.buildCookbookListPath(context.getRequest().getParameters()));
       case COOKBOOK_DETAILS:
+        return getAsset(chefPathUtils.buildCookbookDetailPath(matcherState));
       case COOKBOOK_DETAIL_VERSION:
+        return getAsset(chefPathUtils.buildCookbookDetailByVersionPath(matcherState));
+      // Let search requests pass through similar to other formats
       case COOKBOOKS_SEARCH:
         return null;
       default:
@@ -106,15 +111,24 @@ public class ChefProxyFacetImpl
   @Override
   protected Content store(final Context context, final Content content) throws IOException {
     AssetKind assetKind = context.getAttributes().require(AssetKind.class);
+    TokenMatcher.State matcherState = chefPathUtils.matcherState(context);
     switch(assetKind) {
       case COOKBOOK:
-        TokenMatcher.State matcherState = chefPathUtils.matcherState(context);
         return putCookbook(content,
             AssetKind.COOKBOOK,
             chefPathUtils.buildCookbookPath(matcherState));
       case COOKBOOK_DETAILS:
+        return putMetadata(content,
+            AssetKind.COOKBOOK_DETAILS,
+            chefPathUtils.buildCookbookDetailPath(matcherState));
       case COOKBOOKS_LIST:
+        return putMetadata(content,
+            AssetKind.COOKBOOKS_LIST,
+            chefPathUtils.buildCookbookListPath(context.getRequest().getParameters()));
       case COOKBOOK_DETAIL_VERSION:
+        return putMetadata(content,
+            AssetKind.COOKBOOK_DETAIL_VERSION,
+            chefPathUtils.buildCookbookDetailByVersionPath(matcherState));
       case COOKBOOKS_SEARCH:
         return rewriteMetadata(content, assetKind);
       default:
@@ -124,19 +138,26 @@ public class ChefProxyFacetImpl
 
   private Content rewriteMetadata(final Content content, final AssetKind assetKind) {
     try {
-      switch (assetKind) {
-        case COOKBOOK_DETAIL_VERSION:
-        case COOKBOOK_DETAILS:
-        case COOKBOOKS_LIST:
-        case COOKBOOKS_SEARCH:
-          return cookBookApiAbsoluteUrlRemover.maybeRewriteCookbookApiResponseAbsoluteUrls(content, assetKind);
-        default:
-          return content;
+      if (assetKind.getCacheType().equals(CacheControllerHolder.METADATA)) {
+        return cookBookApiAbsoluteUrlRemover.maybeRewriteCookbookApiResponseAbsoluteUrls(content, assetKind);
       }
+      return content;
     }
     catch (IOException | URISyntaxException ex) {
       log.debug("Woops " + ex.toString());
       return content;
+    }
+  }
+
+  private Content putMetadata(final Content content,
+                              final AssetKind assetKind,
+                              final String assetPath) throws IOException
+  {
+    StorageFacet storageFacet = facet(StorageFacet.class);
+    Content rewrite = rewriteMetadata(content, assetKind);
+
+    try (TempBlob tempBlob = storageFacet.createTempBlob(rewrite.openInputStream(), ChefDataAccess.HASH_ALGORITHMS)) {
+      return doPutMetadata(tempBlob, rewrite, assetKind, assetPath);
     }
   }
 
@@ -145,10 +166,30 @@ public class ChefProxyFacetImpl
                               final String assetPath)  throws IOException
   {
     StorageFacet storageFacet = facet(StorageFacet.class);
+
     try (TempBlob tempBlob = storageFacet.createTempBlob(content.openInputStream(), ChefDataAccess.HASH_ALGORITHMS)) {
       ChefAttributes chefAttributes = chefAttributeParser.getAttributesFromInputStream(tempBlob.get());
       return doPutCookbook(chefAttributes, tempBlob, content, assetKind, assetPath);
     }
+  }
+
+  @TransactionalStoreBlob
+  protected Content doPutMetadata(final TempBlob tempBlob,
+                                  final Payload payload,
+                                  final AssetKind assetKind,
+                                  final String assetPath) throws IOException
+  {
+    StorageTx tx = UnitOfWork.currentTx();
+    Bucket bucket = tx.findBucket(getRepository());
+
+    Asset asset = chefDataAccess.findAsset(tx, bucket, assetPath);
+    if (asset == null) {
+      asset = tx.createAsset(bucket, getRepository().getFormat());
+      asset.name(assetPath);
+      asset.formatAttributes().set(P_ASSET_KIND, assetKind.name());
+    }
+
+    return chefDataAccess.saveAsset(tx, asset, tempBlob, payload);
   }
 
   @TransactionalStoreBlob

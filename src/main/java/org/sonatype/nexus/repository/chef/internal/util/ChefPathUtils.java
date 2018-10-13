@@ -16,7 +16,10 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.sonatype.nexus.repository.view.Context;
+import org.sonatype.nexus.repository.view.Parameters;
 import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher;
+
+import com.google.common.base.Joiner;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -50,5 +53,24 @@ public class ChefPathUtils
     String version = version(state);
 
     return String.format("cookbooks/%s/%s/%s-%s.tar.gz", cookbook, version, cookbook, version);
+  }
+
+  public String buildCookbookDetailPath(final TokenMatcher.State state) {
+    String cookbook = cookbook(state);
+
+    return String.format("cookbooks/%s", cookbook);
+  }
+
+  public String buildCookbookDetailByVersionPath(final TokenMatcher.State state) {
+    String cookbook = cookbook(state);
+    String version = version(state);
+
+    return String.format("cookbooks/%s/version/%s", cookbook, version);
+  }
+
+  public String buildCookbookListPath(final Parameters parameters) {
+    checkNotNull(parameters);
+
+    return "cookbooks/list" + "?" + Joiner.on("&").withKeyValueSeparator("=").join(parameters);
   }
 }
