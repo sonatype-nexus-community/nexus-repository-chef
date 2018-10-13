@@ -144,7 +144,7 @@ public class ChefProxyFacetImpl
       return content;
     }
     catch (IOException | URISyntaxException ex) {
-      log.debug("Woops " + ex.toString());
+      log.debug(String.format("Unable to rewrite metadata on %s because %s", assetKind.name(), ex.toString()));
       return content;
     }
   }
