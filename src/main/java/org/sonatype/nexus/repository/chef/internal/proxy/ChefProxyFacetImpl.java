@@ -129,6 +129,7 @@ public class ChefProxyFacetImpl
         return putMetadata(content,
             AssetKind.COOKBOOK_DETAIL_VERSION,
             chefPathUtils.buildCookbookDetailByVersionPath(matcherState));
+        // Don't save search, too dynamic
       case COOKBOOKS_SEARCH:
         return rewriteMetadata(content, assetKind);
       default:

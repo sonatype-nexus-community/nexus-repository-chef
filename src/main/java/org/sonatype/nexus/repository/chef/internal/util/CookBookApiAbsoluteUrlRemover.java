@@ -100,19 +100,23 @@ public class CookBookApiAbsoluteUrlRemover
     reader.close();
     writer.close();
 
+    File tempFile = new File(filePath);
+
     InputStream is = new FileInputStream(filePath);
 
-    File tempFile = new File(filePath);
 
     long length = tempFile.length();
 
-    tempFile.delete();
 
-    return chefDataAccess.toContent(
+    Content result = chefDataAccess.toContent(
         new FileInputStreamSupplier(is),
         length,
         ContentTypes.APPLICATION_JSON
     );
+
+    tempFile.delete();
+
+    return result;
   }
 
   private class FileInputStreamSupplier
