@@ -20,7 +20,7 @@ import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.sonatype.goodies.testsupport.TestSupport;
+import org.sonatype.nexus.repository.chef.internal.ChefTestSupport;
 
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
@@ -31,7 +31,7 @@ import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 public class JsonStreamerTest
-    extends TestSupport
+    extends ChefTestSupport
 {
   private JsonStreamer underTest;
 
@@ -44,22 +44,6 @@ public class JsonStreamerTest
   private ByteArrayOutputStream baos;
 
   private OutputStreamWriter osw;
-
-  private static final String COOKBOOK_LIST = "cookbooklist.json";
-
-  private static final String COOKBOOK_DETAILS = "cookbookdetails.json";
-
-  private static final String COOKBOOK_DETAILS_BY_VERSION = "cookbookdetailversion.json";
-
-  private static final String COOKBOOK_SEARCH = "cookbooksearch.json";
-
-  private static final String COOKBOOK_LIST_EXPECTED = "cookbooklist_result.json";
-
-  private static final String COOKBOOK_DETAILS_EXPECTED = "cookbookdetails_result.json";
-
-  private static final String COOKBOOK_DETAILS_BY_VERSION_EXPECTED = "cookbookdetailversion_result.json";
-
-  private static final String COOKBOOK_SEARCH_EXPECTED = "cookbooksearch_result.json";
 
   public void setUp(final InputStream is) throws Exception {
     isr = new InputStreamReader(is);

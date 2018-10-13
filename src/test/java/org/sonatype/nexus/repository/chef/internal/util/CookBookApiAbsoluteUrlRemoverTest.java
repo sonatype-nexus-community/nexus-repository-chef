@@ -14,8 +14,8 @@ package org.sonatype.nexus.repository.chef.internal.util;
 
 import java.io.InputStream;
 
-import org.sonatype.goodies.testsupport.TestSupport;
 import org.sonatype.nexus.repository.chef.internal.AssetKind;
+import org.sonatype.nexus.repository.chef.internal.ChefTestSupport;
 import org.sonatype.nexus.repository.view.Content;
 import org.sonatype.nexus.repository.view.ContentTypes;
 import org.sonatype.nexus.repository.view.payloads.StreamPayload;
@@ -27,7 +27,7 @@ import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 public class CookBookApiAbsoluteUrlRemoverTest
-    extends TestSupport
+    extends ChefTestSupport
 {
   private CookBookApiAbsoluteUrlRemover underTest;
 
@@ -40,55 +40,38 @@ public class CookBookApiAbsoluteUrlRemoverTest
   @Test
   public void maybeRewriteCookbookApiResponseAbsoluteUrlsCookbookDetailsTest() throws Exception
   {
-    InputStream is = getClass().getResourceAsStream("cookbookdetails.json");
-    Content content = new Content(new StreamPayload(new InputStreamSupplierTest(is), is.available(),
-        ContentTypes.APPLICATION_JSON));
-    Content result = underTest.maybeRewriteCookbookApiResponseAbsoluteUrls(content, AssetKind.COOKBOOK_DETAILS);
-
-    JSONAssert.assertEquals(
-        IOUtils.toString(getClass().getResourceAsStream("cookbookdetails_result.json")),
-        IOUtils.toString(result.openInputStream()),
-        false);
+    doTest(COOKBOOK_DETAILS, COOKBOOK_DETAILS_EXPECTED, AssetKind.COOKBOOK_DETAILS);
   }
 
   @Test
   public void maybeRewriteCookbookApiResponseAbsoluteUrlsCookbookDetailVersionTest() throws Exception
   {
-    InputStream is = getClass().getResourceAsStream("cookbookdetailversion.json");
-    Content content = new Content(new StreamPayload(new InputStreamSupplierTest(is), is.available(),
-        ContentTypes.APPLICATION_JSON));
-    Content result = underTest.maybeRewriteCookbookApiResponseAbsoluteUrls(content, AssetKind.COOKBOOK_DETAIL_VERSION);
-
-    JSONAssert.assertEquals(
-        IOUtils.toString(getClass().getResourceAsStream("cookbookdetailversion_result.json")),
-        IOUtils.toString(result.openInputStream()),
-        false);
+    doTest(COOKBOOK_DETAILS_BY_VERSION, COOKBOOK_DETAILS_BY_VERSION_EXPECTED, AssetKind.COOKBOOK_DETAIL_VERSION);
   }
 
   @Test
   public void maybeRewriteCookbookApiResponseAbsoluteUrlsCookbookListTest() throws Exception
   {
-    InputStream is = getClass().getResourceAsStream("cookbooklist.json");
-    Content content = new Content(new StreamPayload(new InputStreamSupplierTest(is), is.available(),
-        ContentTypes.APPLICATION_JSON));
-    Content result = underTest.maybeRewriteCookbookApiResponseAbsoluteUrls(content, AssetKind.COOKBOOKS_LIST);
-
-    JSONAssert.assertEquals(
-        IOUtils.toString(getClass().getResourceAsStream("cookbooklist_result.json")),
-        IOUtils.toString(result.openInputStream()),
-        false);
+    doTest(COOKBOOK_LIST, COOKBOOK_LIST_EXPECTED, AssetKind.COOKBOOKS_LIST);
   }
 
   @Test
   public void maybeRewriteCookbookApiResponseAbsoluteUrlsCookbookSearchTest() throws Exception
   {
-    InputStream is = getClass().getResourceAsStream("cookbooksearch.json");
+    doTest(COOKBOOK_SEARCH, COOKBOOK_SEARCH_EXPECTED, AssetKind.COOKBOOKS_SEARCH);
+  }
+
+  private void doTest(final String inputFile,
+                      final String resultFile,
+                      final AssetKind assetKind) throws Exception
+  {
+    InputStream is = getClass().getResourceAsStream(inputFile);
     Content content = new Content(new StreamPayload(new InputStreamSupplierTest(is), is.available(),
         ContentTypes.APPLICATION_JSON));
-    Content result = underTest.maybeRewriteCookbookApiResponseAbsoluteUrls(content, AssetKind.COOKBOOKS_SEARCH);
+    Content result = underTest.maybeRewriteCookbookApiResponseAbsoluteUrls(content, assetKind);
 
     JSONAssert.assertEquals(
-        IOUtils.toString(getClass().getResourceAsStream("cookbooksearch_result.json")),
+        IOUtils.toString(getClass().getResourceAsStream(resultFile)),
         IOUtils.toString(result.openInputStream()),
         false);
   }
