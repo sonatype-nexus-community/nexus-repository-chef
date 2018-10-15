@@ -32,7 +32,13 @@ public class ChefPathUtils
 {
   public String cookbook(final TokenMatcher.State state) { return match(state, "cookbook"); }
 
-  public String version(final TokenMatcher.State state) { return match(state, "version"); }
+  public String version(final TokenMatcher.State state) {
+    String version = match(state, "version");
+    if (version.contains("_")) {
+      return version.replace("_", ".");
+    }
+    return version;
+  }
 
   private String match(final TokenMatcher.State state, final String name) {
     checkNotNull(state);
@@ -52,25 +58,25 @@ public class ChefPathUtils
     String cookbook = cookbook(state);
     String version = version(state);
 
-    return String.format("cookbooks/%s/%s/%s-%s.tar.gz", cookbook, version, cookbook, version);
+    return String.format("%s/%s/%s-%s.tar.gz", cookbook, version, cookbook, version);
   }
 
   public String buildCookbookDetailPath(final TokenMatcher.State state) {
     String cookbook = cookbook(state);
 
-    return String.format("cookbooks/%s", cookbook);
+    return String.format("api/v1/cookbooks/%s", cookbook);
   }
 
   public String buildCookbookDetailByVersionPath(final TokenMatcher.State state) {
     String cookbook = cookbook(state);
     String version = version(state);
 
-    return String.format("cookbooks/%s/version/%s", cookbook, version);
+    return String.format("api/v1/cookbooks/%s/version/%s", cookbook, version);
   }
 
   public String buildCookbookListPath(final Parameters parameters) {
     checkNotNull(parameters);
 
-    return "cookbooks/list" + "?" + Joiner.on("&").withKeyValueSeparator("=").join(parameters);
+    return "api/v1/cookbooks" + "?" + Joiner.on("&").withKeyValueSeparator("=").join(parameters);
   }
 }

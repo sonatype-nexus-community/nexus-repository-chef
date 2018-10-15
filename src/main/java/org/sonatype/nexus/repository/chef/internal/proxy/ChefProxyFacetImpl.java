@@ -40,6 +40,7 @@ import org.sonatype.nexus.repository.transaction.TransactionalStoreBlob;
 import org.sonatype.nexus.repository.transaction.TransactionalTouchBlob;
 import org.sonatype.nexus.repository.transaction.TransactionalTouchMetadata;
 import org.sonatype.nexus.repository.view.Content;
+import org.sonatype.nexus.repository.view.ContentTypes;
 import org.sonatype.nexus.repository.view.Context;
 import org.sonatype.nexus.repository.view.Parameters;
 import org.sonatype.nexus.repository.view.Payload;
@@ -95,6 +96,7 @@ public class ChefProxyFacetImpl
       case COOKBOOK:
         return getAsset(chefPathUtils.buildCookbookPath(matcherState));
       case COOKBOOKS_LIST:
+        log.info(context.getRequest().getParameters().toString());
         return getAsset(chefPathUtils.buildCookbookListPath(context.getRequest().getParameters()));
       case COOKBOOK_DETAILS:
         return getAsset(chefPathUtils.buildCookbookDetailPath(matcherState));
@@ -122,6 +124,7 @@ public class ChefProxyFacetImpl
             AssetKind.COOKBOOK_DETAILS,
             chefPathUtils.buildCookbookDetailPath(matcherState));
       case COOKBOOKS_LIST:
+        log.info(context.getRequest().getParameters().toString());
         return putMetadata(content,
             AssetKind.COOKBOOKS_LIST,
             chefPathUtils.buildCookbookListPath(context.getRequest().getParameters()));
@@ -129,7 +132,7 @@ public class ChefProxyFacetImpl
         return putMetadata(content,
             AssetKind.COOKBOOK_DETAIL_VERSION,
             chefPathUtils.buildCookbookDetailByVersionPath(matcherState));
-        // Don't save search, too dynamic
+      // Don't save search, too dynamic
       case COOKBOOKS_SEARCH:
         return rewriteMetadata(content, assetKind);
       default:
@@ -187,6 +190,7 @@ public class ChefProxyFacetImpl
     if (asset == null) {
       asset = tx.createAsset(bucket, getRepository().getFormat());
       asset.name(assetPath);
+      asset.contentType(ContentTypes.APPLICATION_JSON);
       asset.formatAttributes().set(P_ASSET_KIND, assetKind.name());
     }
 
