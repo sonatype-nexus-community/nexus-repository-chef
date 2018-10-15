@@ -13,6 +13,7 @@
 package org.sonatype.nexus.repository.chef.internal.metadata;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * @since 0.0.1
@@ -21,8 +22,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public final class ChefAttributes
 {
   private String name;
+
   private String version;
+
   private String description;
+
+  @JsonProperty("long_description")
   private String longDescription;
 
   public String getDescription() {

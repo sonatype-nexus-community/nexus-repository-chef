@@ -49,5 +49,6 @@ public class ChefAttributeParserTest
     assertThat(result.getName(), is(notNullValue()));
     assertThat(result.getVersion(), is(notNullValue()));
     assertThat(result.getDescription(), is(notNullValue()));
+    assertThat(result.getLongDescription(), is(notNullValue()));
   }
 }
