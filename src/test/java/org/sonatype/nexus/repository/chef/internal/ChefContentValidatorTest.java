@@ -43,6 +43,10 @@ public class ChefContentValidatorTest
   @Mock
   MimeRulesSource mimeRulesSource;
 
+  private final static String TEST_JSON_CONTENT_NAME = "testjsonwithoutextension";
+
+  private final static String TEST_TAR_GZ_CONTENT_NAME = "test.tar.gz";
+
   @Before
   public void setUp() throws Exception {
     underTest = new ChefContentValidator(defaultContentValidator);
@@ -50,18 +54,15 @@ public class ChefContentValidatorTest
 
   @Test
   public void testContentValidatorJson() throws Exception {
-    when(defaultContentValidator.determineContentType(
-        false,
-        contentStream,
-        mimeRulesSource,
-        "testjsonwithoutextension.json",
-        ContentTypes.APPLICATION_JSON))
-        .thenReturn(ContentTypes.APPLICATION_JSON);
+    setUpMock(
+        TEST_JSON_CONTENT_NAME + ".json",
+        ContentTypes.APPLICATION_JSON,
+        false);
     String result = underTest.determineContentType(
         true,
         contentStream,
         mimeRulesSource,
-        "testjsonwithoutextension",
+        TEST_JSON_CONTENT_NAME,
         ContentTypes.APPLICATION_JSON);
 
     assertThat(result, is(equalTo(ContentTypes.APPLICATION_JSON)));
@@ -69,20 +70,30 @@ public class ChefContentValidatorTest
 
   @Test
   public void testContentValidatorTarGz() throws Exception {
-    when(defaultContentValidator.determineContentType(
-        true,
-        contentStream,
-        mimeRulesSource,
-        "test.tar.gz",
-        ContentTypes.APPLICATION_GZIP))
-        .thenReturn(ContentTypes.APPLICATION_GZIP);
+    setUpMock(
+        TEST_TAR_GZ_CONTENT_NAME,
+        ContentTypes.APPLICATION_GZIP,
+        true);
     String result = underTest.determineContentType(
         true,
         contentStream,
         mimeRulesSource,
-        "test.tar.gz",
+        TEST_TAR_GZ_CONTENT_NAME,
         ContentTypes.APPLICATION_GZIP);
 
     assertThat(result, is(equalTo(ContentTypes.APPLICATION_GZIP)));
+  }
+
+  private void setUpMock(final String contentName,
+                         final String contentType,
+                         final boolean strictContentTypeValidation) throws Exception
+  {
+    when(defaultContentValidator.determineContentType(
+        strictContentTypeValidation,
+        contentStream,
+        mimeRulesSource,
+        contentName,
+        contentType))
+        .thenReturn(contentType);
   }
 }
