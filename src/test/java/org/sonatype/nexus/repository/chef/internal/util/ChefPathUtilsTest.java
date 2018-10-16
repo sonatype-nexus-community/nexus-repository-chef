@@ -16,8 +16,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.sonatype.goodies.testsupport.TestSupport;
+import org.sonatype.nexus.repository.view.Parameters;
 import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher;
 
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.MultimapBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -35,15 +38,17 @@ public class ChefPathUtilsTest
   @Mock
   TokenMatcher.State state;
 
+  private Map<String, String> tokens;
+
   @Before
   public void setUp() throws Exception {
     underTest = new ChefPathUtils();
   }
 
   @Test
-  public void testRemoveUnderscoresFromVersion() throws Exception {
-    Map<String, String> tokens = new HashMap<>();
-    tokens.put("version", "7_0_0");
+  public void testRemoveUnderscoresFromVersion() throws Exception
+  {
+    tokens = setupTokens("7_0_0", "default");
     when(state.getTokens()).thenReturn(tokens);
     String result = underTest.version(state);
 
@@ -51,12 +56,60 @@ public class ChefPathUtilsTest
   }
 
   @Test
-  public void testNormalVersion() throws Exception {
-    Map<String, String> tokens = new HashMap<>();
-    tokens.put("version", "7.0.0");
+  public void testNormalVersion() throws Exception
+  {
+    tokens = setupTokens("7.0.0", "default");
     when(state.getTokens()).thenReturn(tokens);
     String result = underTest.version(state);
 
     assertThat(result, is(equalTo("7.0.0")));
+  }
+
+  @Test
+  public void testGetCookbookByVersionPath() throws Exception {
+    tokens = setupTokens("7.0.0", "apt");
+    when(state.getTokens()).thenReturn(tokens);
+    String result = underTest.buildCookbookDetailByVersionPath(state);
+
+    assertThat(result, is(equalTo("api/v1/cookbooks/apt/version/7.0.0")));
+  }
+
+  @Test
+  public void testGetCookbookDetailPath() throws Exception {
+    tokens = setupTokens("7.0.0", "apt");
+    when(state.getTokens()).thenReturn(tokens);
+    String result = underTest.buildCookbookDetailPath(state);
+
+    assertThat(result, is(equalTo("api/v1/cookbooks/apt")));
+  }
+
+  @Test
+  public void testGetCookbookListPath() throws Exception {
+    ListMultimap<String, String> entries = MultimapBuilder.linkedHashKeys().arrayListValues().build();
+    entries.put("test", "test");
+    entries.put("another", "another");
+    Parameters parameters = new Parameters(entries);
+    String result = underTest.buildCookbookListPath(parameters);
+
+    assertThat(result, is(equalTo("api/v1/cookbooks?test=test&another=another")));
+  }
+
+  @Test
+  public void testGetCookbookDownloadPath() throws Exception {
+    tokens = setupTokens("7.0.0", "apt");
+    when(state.getTokens()).thenReturn(tokens);
+    String result = underTest.buildCookbookPath(state);
+
+    assertThat(result, is(equalTo("apt/7.0.0/apt-7.0.0.tar.gz")));
+  }
+
+  private Map<String, String> setupTokens(final String version,
+                                          final String cookbook)
+  {
+    Map<String, String> tokens = new HashMap<>();
+    tokens.put("version", version);
+    tokens.put("cookbook", cookbook);
+
+    return tokens;
   }
 }
