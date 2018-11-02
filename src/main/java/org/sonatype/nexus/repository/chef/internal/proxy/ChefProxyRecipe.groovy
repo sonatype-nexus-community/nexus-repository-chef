@@ -52,7 +52,8 @@ class ChefProxyRecipe
 
   @Inject
   ChefProxyRecipe(@Named(ProxyType.NAME) final Type type,
-                  @Named(ChefFormat.NAME) final Format format) {
+                  @Named(ChefFormat.NAME) final Format format)
+  {
     super(type, format)
   }
 
