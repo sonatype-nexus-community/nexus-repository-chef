@@ -85,6 +85,7 @@ class ChefProxyRecipe
           .handler(negativeCacheHandler)
           .handler(partialFetchHandler)
           .handler(contentHeadersHandler)
+          .handler(conditionalRequestHandler)
           .handler(unitOfWorkHandler)
           .handler(proxyHandler)
           .create())
