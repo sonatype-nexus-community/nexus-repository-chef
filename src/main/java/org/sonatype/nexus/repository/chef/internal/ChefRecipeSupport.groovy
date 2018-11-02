@@ -119,16 +119,8 @@ abstract class ChefRecipeSupport
    * Matcher for cookbook download.
    */
   static Matcher downloadMatcher() {
-    LogicMatchers.and(
-        new ActionMatcher(GET, HEAD),
-        new TokenMatcher('/api/v1/cookbooks/{cookbook:.+}/versions/{version:.+}/download'),
-        new Matcher() {
-          @Override
-          boolean matches(final Context context) {
-            context.attributes.set(AssetKind.class, AssetKind.COOKBOOK)
-            return true
-          }
-        }
+    builderTokenMatcherWithActionsAndAssetKind(
+        '/api/v1/cookbooks/{cookbook:.+}/versions/{version:.+}/download', AssetKind.COOKBOOK, GET, HEAD
     )
   }
 
@@ -136,16 +128,8 @@ abstract class ChefRecipeSupport
    * Matcher for cookbook details.
    */
   static Matcher cookbookDetailVersionMatcher() {
-    LogicMatchers.and(
-        new ActionMatcher(GET, HEAD),
-        new TokenMatcher('/api/v1/cookbooks/{cookbook:.+}/versions/{version:.+}'),
-        new Matcher() {
-          @Override
-          boolean matches(final Context context) {
-            context.attributes.set(AssetKind.class, AssetKind.COOKBOOK_DETAIL_VERSION)
-            return true
-          }
-        }
+    builderTokenMatcherWithActionsAndAssetKind(
+        '/api/v1/cookbooks/{cookbook:.+}/versions/{version:.+}', AssetKind.COOKBOOK_DETAIL_VERSION, GET, HEAD
     )
   }
 
@@ -153,16 +137,8 @@ abstract class ChefRecipeSupport
    * Matcher for cookbook details.
    */
   static Matcher cookbookDetailsMatcher() {
-    LogicMatchers.and(
-        new ActionMatcher(GET, HEAD),
-        new TokenMatcher('/api/v1/cookbooks/{cookbook:.+}'),
-        new Matcher() {
-          @Override
-          boolean matches(final Context context) {
-            context.attributes.set(AssetKind.class, AssetKind.COOKBOOK_DETAILS)
-            return true
-          }
-        }
+    builderTokenMatcherWithActionsAndAssetKind(
+        '/api/v1/cookbooks/{cookbook:.+}', AssetKind.COOKBOOK_DETAILS, GET, HEAD
     )
   }
 
@@ -170,16 +146,8 @@ abstract class ChefRecipeSupport
    * Matcher for cookbook list.
    */
   static Matcher cookbooksMatcher() {
-    LogicMatchers.and(
-        new ActionMatcher(GET, HEAD),
-        new TokenMatcher('/api/v1/cookbooks'),
-        new Matcher() {
-          @Override
-          boolean matches(final Context context) {
-            context.attributes.set(AssetKind.class, AssetKind.COOKBOOKS_LIST)
-            return true
-          }
-        }
+    builderTokenMatcherWithActionsAndAssetKind(
+        '/api/v1/cookbooks', AssetKind.COOKBOOKS_LIST, GET, HEAD
     )
   }
 
@@ -187,13 +155,29 @@ abstract class ChefRecipeSupport
    * Matcher for cookbook list.
    */
   static Matcher cookbookSearchMatcher() {
+    builderTokenMatcherWithActionsAndAssetKind(
+        '/api/v1/search', AssetKind.COOKBOOKS_SEARCH, GET, HEAD
+    )
+  }
+
+  /**
+   * Method to allow building a Matcher for Chef routes
+   * @param pattern
+   * @param assetKind
+   * @param httpMethods
+   * @return Matcher
+   */
+  static Matcher builderTokenMatcherWithActionsAndAssetKind(final String pattern,
+                                                            final AssetKind assetKind,
+                                                            final String... httpMethods)
+  {
     LogicMatchers.and(
-        new ActionMatcher(GET, HEAD),
-        new TokenMatcher('/api/v1/search'),
+        new ActionMatcher(httpMethods),
+        new TokenMatcher(pattern),
         new Matcher() {
           @Override
           boolean matches(final Context context) {
-            context.attributes.set(AssetKind.class, AssetKind.COOKBOOKS_SEARCH)
+            context.attributes.set(AssetKind.class, assetKind)
             return true
           }
         }
