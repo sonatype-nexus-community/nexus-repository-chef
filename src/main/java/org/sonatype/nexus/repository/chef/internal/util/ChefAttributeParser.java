@@ -38,7 +38,8 @@ public class ChefAttributeParser
 
   @Inject
   public ChefAttributeParser(final TgzParser tgzParser,
-                             final ObjectMapper objectMapper) {
+                             final ObjectMapper objectMapper)
+  {
     this.tgzParser = checkNotNull(tgzParser);
     this.objectMapper = checkNotNull(objectMapper);
   }
