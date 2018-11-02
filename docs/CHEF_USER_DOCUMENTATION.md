@@ -34,9 +34,11 @@ detail. Minimal configuration steps are:
 
 ### Configuring Chef and Knife 
 
-Configuring Chef to use Nexus Repository is fairly easy! 
+There are relatively few steps for configuring Chef to use Nexus Repository:
 
 You'll need to have Chef installed, and as well install Knife, for interaction with the Supermarket.
+
+NOTE: These instructions are Linux/OS X specific.
 
 Once you have Chef up and running you'll want to run commands similar to the following:
 
