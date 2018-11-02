@@ -74,7 +74,8 @@ public class ChefProxyFacetImpl
   public ChefProxyFacetImpl(final ChefDataAccess chefDataAccess,
                             final ChefPathUtils chefPathUtils,
                             final ChefAttributeParser chefAttributeParser,
-                            final CookBookApiAbsoluteUrlRemover cookBookApiAbsoluteUrlRemover) {
+                            final CookBookApiAbsoluteUrlRemover cookBookApiAbsoluteUrlRemover)
+  {
     this.chefDataAccess = checkNotNull(chefDataAccess);
     this.chefPathUtils = checkNotNull(chefPathUtils);
     this.chefAttributeParser = checkNotNull(chefAttributeParser);
@@ -96,7 +97,6 @@ public class ChefProxyFacetImpl
       case COOKBOOK:
         return getAsset(chefPathUtils.buildCookbookPath(matcherState));
       case COOKBOOKS_LIST:
-        log.info(context.getRequest().getParameters().toString());
         return getAsset(chefPathUtils.buildCookbookListPath(context.getRequest().getParameters()));
       case COOKBOOK_DETAILS:
         return getAsset(chefPathUtils.buildCookbookDetailPath(matcherState));
@@ -124,7 +124,6 @@ public class ChefProxyFacetImpl
             AssetKind.COOKBOOK_DETAILS,
             chefPathUtils.buildCookbookDetailPath(matcherState));
       case COOKBOOKS_LIST:
-        log.info(context.getRequest().getParameters().toString());
         return putMetadata(content,
             AssetKind.COOKBOOKS_LIST,
             chefPathUtils.buildCookbookListPath(context.getRequest().getParameters()));
@@ -256,7 +255,7 @@ public class ChefProxyFacetImpl
     Asset asset = Content.findAsset(tx, tx.findBucket(getRepository()), content);
     if (asset == null) {
       log.debug(
-          "Attempting to set cache info for non-existent Helm asset {}", content.getAttributes().require(Asset.class)
+          "Attempting to set cache info for non-existent Chef asset {}", content.getAttributes().require(Asset.class)
       );
       return;
     }
