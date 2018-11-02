@@ -46,9 +46,8 @@ public class ChefAttributeParser
 
   public ChefAttributes getAttributesFromInputStream(final InputStream inputStream) throws IOException {
     try (InputStream is = tgzParser.getMetadataFromInputStream(inputStream)) {
-      ChefAttributes chefAttributes = this.objectMapper.readValue(is, ChefAttributes.class);
 
-      return chefAttributes;
+      return this.objectMapper.readValue(is, ChefAttributes.class);
     }
   }
 }
