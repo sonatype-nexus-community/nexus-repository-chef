@@ -61,6 +61,12 @@ public class CookBookApiAbsoluteUrlRemoverTest
     doTest(COOKBOOK_SEARCH, COOKBOOK_SEARCH_EXPECTED, AssetKind.COOKBOOKS_SEARCH);
   }
 
+  @Test
+  public void maybeRewriteCookbookApiResponseAbsoluteUrlsCookbookUniverseTest() throws Exception
+  {
+    doTest(COOKBOOKS_UNIVERSE, COOKBOOKS_UNIVERSE_EXPECTED, AssetKind.COOKBOOKS_UNIVERSE);
+  }
+
   private void doTest(final String inputFile,
                       final String resultFile,
                       final AssetKind assetKind) throws Exception

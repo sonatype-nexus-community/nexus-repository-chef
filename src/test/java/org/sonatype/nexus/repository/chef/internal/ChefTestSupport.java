@@ -25,6 +25,8 @@ public class ChefTestSupport
 
   protected static final String COOKBOOK_SEARCH = "cookbooksearch.json";
 
+  protected static final String COOKBOOKS_UNIVERSE = "universe.json";
+
   protected static final String COOKBOOK_LIST_EXPECTED = "cookbooklist_result.json";
 
   protected static final String COOKBOOK_DETAILS_EXPECTED = "cookbookdetails_result.json";
@@ -32,4 +34,6 @@ public class ChefTestSupport
   protected static final String COOKBOOK_DETAILS_BY_VERSION_EXPECTED = "cookbookdetailversion_result.json";
 
   protected static final String COOKBOOK_SEARCH_EXPECTED = "cookbooksearch_result.json";
+
+  protected static final String COOKBOOKS_UNIVERSE_EXPECTED = "universe_results.json";
 }

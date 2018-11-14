@@ -161,6 +161,15 @@ abstract class ChefRecipeSupport
   }
 
   /**
+   * Matcher for cookbook list.
+   */
+  static Matcher cookbookUniverseMatcher() {
+    builderTokenMatcherWithActionsAndAssetKind(
+        '/universe', AssetKind.COOKBOOKS_UNIVERSE, GET, HEAD
+    )
+  }
+
+  /**
    * Method to allow building a Matcher for Chef routes
    * @param pattern
    * @param assetKind

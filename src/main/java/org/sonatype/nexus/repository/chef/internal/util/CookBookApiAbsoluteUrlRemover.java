@@ -95,6 +95,13 @@ public class CookBookApiAbsoluteUrlRemover
             (r, w, name) ->
                 doSetUrlAsRelative(r, w));
         break;
+      case COOKBOOKS_UNIVERSE:
+        jsonStreamer.parseJson(
+            (name, token) ->
+                token.equals(JsonToken.STRING) || (name.equals("location_path") || name.equals("download_url")),
+            (r, w, name) ->
+                doSetUrlAsRelative(r, w));
+        break;
     }
 
     reader.close();

@@ -51,6 +51,7 @@ import org.sonatype.nexus.repository.chef.internal.util.ChefAttributeParser;
 import com.google.common.base.Joiner;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.sonatype.nexus.repository.chef.internal.AssetKind.*;
 import static org.sonatype.nexus.repository.storage.AssetEntityAdapter.P_ASSET_KIND;
 
 /**
@@ -105,6 +106,8 @@ public class ChefProxyFacetImpl
       // Let search requests pass through similar to other formats
       case COOKBOOKS_SEARCH:
         return null;
+      case COOKBOOKS_UNIVERSE:
+        return getAsset("universe");
       default:
         throw new IllegalStateException("Received an invalid AssetKind of type: " + assetKind.name());
     }
@@ -116,24 +119,18 @@ public class ChefProxyFacetImpl
     TokenMatcher.State matcherState = chefPathUtils.matcherState(context);
     switch(assetKind) {
       case COOKBOOK:
-        return putCookbook(content,
-            AssetKind.COOKBOOK,
-            chefPathUtils.buildCookbookPath(matcherState));
+        return putCookbook(content, assetKind, chefPathUtils.buildCookbookPath(matcherState));
       case COOKBOOK_DETAILS:
-        return putMetadata(content,
-            AssetKind.COOKBOOK_DETAILS,
-            chefPathUtils.buildCookbookDetailPath(matcherState));
+        return putMetadata(content, assetKind, chefPathUtils.buildCookbookDetailPath(matcherState));
       case COOKBOOKS_LIST:
-        return putMetadata(content,
-            AssetKind.COOKBOOKS_LIST,
-            chefPathUtils.buildCookbookListPath(context.getRequest().getParameters()));
+        return putMetadata(content, assetKind, chefPathUtils.buildCookbookListPath(context.getRequest().getParameters()));
       case COOKBOOK_DETAIL_VERSION:
-        return putMetadata(content,
-            AssetKind.COOKBOOK_DETAIL_VERSION,
-            chefPathUtils.buildCookbookDetailByVersionPath(matcherState));
+        return putMetadata(content, assetKind, chefPathUtils.buildCookbookDetailByVersionPath(matcherState));
       // Don't save search, too dynamic
       case COOKBOOKS_SEARCH:
         return rewriteMetadata(content, assetKind);
+      case COOKBOOKS_UNIVERSE:
+        return putMetadata(content, assetKind, "universe");
       default:
         throw new IllegalStateException("Received an invalid AssetKind of type: " + assetKind.name());
     }
