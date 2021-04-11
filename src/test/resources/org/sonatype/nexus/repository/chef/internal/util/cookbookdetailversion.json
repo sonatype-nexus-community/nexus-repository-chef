@@ -1,0 +1,55 @@
+{
+  "license": "Apache-2.0",
+  "tarball_file_size": 18956,
+  "version": "7.1.1",
+  "published_at": "2018-10-11T14:45:06Z",
+  "average_rating": null,
+  "cookbook": "https://supermarket.chef.io/api/v1/cookbooks/apt",
+  "file": "https://supermarket.chef.io/api/v1/cookbooks/apt/versions/7.1.1/download",
+  "quality_metrics": [
+    {
+      "name": "Supported Platforms",
+      "failed": false,
+      "feedback": "apt supports at least one platform."
+    },
+    {
+      "name": "Publish",
+      "failed": false,
+      "feedback": "apt passed the publish metric"
+    },
+    {
+      "name": "Version Tag",
+      "failed": false,
+      "feedback": "passed the version tag metric."
+    },
+    {
+      "name": "Collaborator Number",
+      "failed": false,
+      "feedback": "passed the Collaborators Metric with 2 collaborators."
+    },
+    {
+      "name": "Contributing File",
+      "failed": false,
+      "feedback": "passed the CONTRIBUTING.md file metric."
+    },
+    {
+      "name": "Testing File",
+      "failed": false,
+      "feedback": "passed the TESTING.md file metric."
+    },
+    {
+      "name": "No Binaries",
+      "failed": false,
+      "feedback": "passed the No Binaries metric. Contains no obvious binaries."
+    },
+    {
+      "name": "Foodcritic",
+      "failed": false,
+      "feedback": "\nRun with Foodcritic Version 14.0.0 with tags metadata,correctness ~FC031 ~FC045 and failure tags any"
+    }
+  ],
+  "supports": {
+    "debian": ">= 0.0.0",
+    "ubuntu": ">= 0.0.0"
+  }
+}

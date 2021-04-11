@@ -15,8 +15,6 @@ package org.sonatype.nexus.repository.chef.internal
 import javax.inject.Inject
 import javax.inject.Provider
 
-import org.sonatype.nexus.repository.chef.internal.security.ChefSecurityFacet
-
 import org.sonatype.nexus.repository.Format
 import org.sonatype.nexus.repository.RecipeSupport
 import org.sonatype.nexus.repository.Type
@@ -32,12 +30,21 @@ import org.sonatype.nexus.repository.storage.DefaultComponentMaintenanceImpl
 import org.sonatype.nexus.repository.storage.StorageFacet
 import org.sonatype.nexus.repository.storage.UnitOfWorkHandler
 import org.sonatype.nexus.repository.view.ConfigurableViewFacet
+import org.sonatype.nexus.repository.view.Context
+import org.sonatype.nexus.repository.view.Matcher
 import org.sonatype.nexus.repository.view.handlers.BrowseUnsupportedHandler
 import org.sonatype.nexus.repository.view.handlers.ConditionalRequestHandler
 import org.sonatype.nexus.repository.view.handlers.ContentHeadersHandler
 import org.sonatype.nexus.repository.view.handlers.ExceptionHandler
 import org.sonatype.nexus.repository.view.handlers.HandlerContributor
 import org.sonatype.nexus.repository.view.handlers.TimingHandler
+import org.sonatype.nexus.repository.view.matchers.ActionMatcher
+import org.sonatype.nexus.repository.view.matchers.logic.LogicMatchers
+import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher
+import org.sonatype.nexus.repository.chef.internal.security.ChefSecurityFacet
+
+import static org.sonatype.nexus.repository.http.HttpMethods.GET
+import static org.sonatype.nexus.repository.http.HttpMethods.HEAD
 
 /**
  * Support for Chef recipes.
@@ -106,5 +113,83 @@ abstract class ChefRecipeSupport
 
   protected ChefRecipeSupport(final Type type, final Format format) {
     super(type, format)
+  }
+
+  /**
+   * Matcher for cookbook download.
+   */
+  static Matcher downloadMatcher() {
+    builderTokenMatcherWithActionsAndAssetKind(
+        '/api/v1/cookbooks/{cookbook:.+}/versions/{version:.+}/download', AssetKind.COOKBOOK, GET, HEAD
+    )
+  }
+
+  /**
+   * Matcher for cookbook details.
+   */
+  static Matcher cookbookDetailVersionMatcher() {
+    builderTokenMatcherWithActionsAndAssetKind(
+        '/api/v1/cookbooks/{cookbook:.+}/versions/{version:.+}', AssetKind.COOKBOOK_DETAIL_VERSION, GET, HEAD
+    )
+  }
+
+  /**
+   * Matcher for cookbook details.
+   */
+  static Matcher cookbookDetailsMatcher() {
+    builderTokenMatcherWithActionsAndAssetKind(
+        '/api/v1/cookbooks/{cookbook:.+}', AssetKind.COOKBOOK_DETAILS, GET, HEAD
+    )
+  }
+
+  /**
+   * Matcher for cookbook list.
+   */
+  static Matcher cookbooksMatcher() {
+    builderTokenMatcherWithActionsAndAssetKind(
+        '/api/v1/cookbooks', AssetKind.COOKBOOKS_LIST, GET, HEAD
+    )
+  }
+
+  /**
+   * Matcher for cookbook list.
+   */
+  static Matcher cookbookSearchMatcher() {
+    builderTokenMatcherWithActionsAndAssetKind(
+        '/api/v1/search', AssetKind.COOKBOOKS_SEARCH, GET, HEAD
+    )
+  }
+
+  /**
+   * Matcher for cookbook list.
+   */
+  static Matcher cookbookUniverseMatcher() {
+    builderTokenMatcherWithActionsAndAssetKind(
+        '/universe', AssetKind.COOKBOOKS_UNIVERSE, GET, HEAD
+    )
+  }
+
+  /**
+   * Method to allow building a Matcher for Chef routes
+   * @param pattern
+   * @param assetKind
+   * @param httpMethods
+   * @return Matcher
+   */
+  static Matcher builderTokenMatcherWithActionsAndAssetKind(final String pattern,
+                                                            final AssetKind assetKind,
+                                                            final String... httpMethods)
+  {
+    LogicMatchers.and(
+        new ActionMatcher(httpMethods),
+        new TokenMatcher(pattern),
+        new Matcher() {
+          @Override
+          boolean matches(final Context context) {
+            context.attributes.set(AssetKind.class, assetKind)
+            return true
+          }
+        }
+    )
   }
 }

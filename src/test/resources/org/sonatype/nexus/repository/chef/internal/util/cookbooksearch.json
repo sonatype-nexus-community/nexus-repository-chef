@@ -1,0 +1,66 @@
+{
+  "start": 0,
+  "total": 10,
+  "items": [
+    {
+      "cookbook_name": "apt",
+      "cookbook_maintainer": "chef",
+      "cookbook_description": "Configures apt and apt caching.",
+      "cookbook": "https://supermarket.chef.io/api/v1/cookbooks/apt"
+    },
+    {
+      "cookbook_name": "fb_apt",
+      "cookbook_maintainer": "phild",
+      "cookbook_description": "Installs/Configures fb_apt",
+      "cookbook": "https://supermarket.chef.io/api/v1/cookbooks/fb_apt"
+    },
+    {
+      "cookbook_name": "apt-chef",
+      "cookbook_maintainer": "chef",
+      "cookbook_description": "Configures apt repository for Chef Software, Inc. products",
+      "cookbook": "https://supermarket.chef.io/api/v1/cookbooks/apt-chef"
+    },
+    {
+      "cookbook_name": "apt-repo",
+      "cookbook_maintainer": "sometimesfood",
+      "cookbook_description": "Add repositories to APT sources",
+      "cookbook": "https://supermarket.chef.io/api/v1/cookbooks/apt-repo"
+    },
+    {
+      "cookbook_name": "aptly",
+      "cookbook_maintainer": "sous-chefs",
+      "cookbook_description": "Installs/Configures aptly",
+      "cookbook": "https://supermarket.chef.io/api/v1/cookbooks/aptly"
+    },
+    {
+      "cookbook_name": "apt_utils",
+      "cookbook_maintainer": "whitestar-dev",
+      "cookbook_description": "Installs/Configures APT",
+      "cookbook": "https://supermarket.chef.io/api/v1/cookbooks/apt_utils"
+    },
+    {
+      "cookbook_name": "apt-mirror",
+      "cookbook_maintainer": "heavywater",
+      "cookbook_description": "Installs/Configures apt-mirror",
+      "cookbook": "https://supermarket.chef.io/api/v1/cookbooks/apt-mirror"
+    },
+    {
+      "cookbook_name": "apt-periodic",
+      "cookbook_maintainer": "madwork",
+      "cookbook_description": "Installs/configures apt-periodic and unattended-upgrades",
+      "cookbook": "https://supermarket.chef.io/api/v1/cookbooks/apt-periodic"
+    },
+    {
+      "cookbook_name": "apt-nginx",
+      "cookbook_maintainer": "st-isidore-de-seville",
+      "cookbook_description": "Installs/Configures apt NGINX Vendor-Specific Repository",
+      "cookbook": "https://supermarket.chef.io/api/v1/cookbooks/apt-nginx"
+    },
+    {
+      "cookbook_name": "apt-docker",
+      "cookbook_maintainer": "st-isidore-de-seville",
+      "cookbook_description": "Installs/Configures apt Docker Vendor-Specific Repository",
+      "cookbook": "https://supermarket.chef.io/api/v1/cookbooks/apt-docker"
+    }
+  ]
+}
