@@ -1,6 +1,6 @@
 /*
  * Sonatype Nexus (TM) Open Source Version
- * Copyright (c) 2018-present Sonatype, Inc.
+ * Copyright (c) 2022-present Sonatype, Inc.
  * All rights reserved. Includes the third-party code listed at http://links.sonatype.com/products/nexus/oss/attributions.
  *
  * This program and the accompanying materials are made available under the terms of the Eclipse Public License Version 1.0,
@@ -10,18 +10,29 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-Ext.define('NX.chef.util.ChefRepositoryUrls', {
-  '@aggregate_priority': 90,
+/*global Ext, NX*/
 
-  singleton: true,
+Ext.define('NX.chef.view.repository.recipe.ChefHosted', {
+  extend: 'NX.coreui.view.repository.RepositorySettingsForm',
+  alias: 'widget.nx-coreui-repository-chef-hosted',
   requires: [
-    'NX.coreui.util.RepositoryUrls',
-    'NX.util.Url'
-  ]
-}, function(self) {
-	NX.coreui.util.RepositoryUrls.addRepositoryUrlStrategy('chef', function (me, assetModel) {
-      var repositoryName = assetModel.get('repositoryName'), assetName = assetModel.get('name');
-      return NX.util.Url.asLink(
-          NX.util.Url.baseUrl + '/repository/' + encodeURIComponent(repositoryName) + '/' + encodeURI(assetName), assetName);
-    });
+    'NX.coreui.view.repository.facet.StorageFacet',
+    'NX.coreui.view.repository.facet.StorageFacetHosted',
+    'NX.coreui.view.repository.facet.CleanupPolicyFacet'
+  ],
+
+  /**
+   * @override
+   */
+  initComponent: function() {
+    var me = this;
+
+    me.items = [
+      {xtype: 'nx-coreui-repository-storage-facet'},
+      {xtype: 'nx-coreui-repository-storage-hosted-facet', writePolicy: 'ALLOW'},
+      {xtype: 'nx-coreui-repository-cleanup-policy-facet'}
+    ];
+
+    me.callParent();
+  }
 });

@@ -19,9 +19,8 @@
   <parent>
     <groupId>org.sonatype.nexus.plugins</groupId>
     <artifactId>nexus-plugins</artifactId>
-    <version>3.13.0-01</version>
+    <version>3.38.0-01</version>
   </parent>
-  <groupId>org.sonatype.nexus.plugins</groupId>
   <artifactId>nexus-repository-chef</artifactId>
   <name>${project.groupId}:${project.artifactId}</name>
   <version>0.0.1</version>
@@ -40,16 +39,32 @@
       <groupId>org.sonatype.nexus</groupId>
       <artifactId>nexus-repository</artifactId>
       <scope>provided</scope>
+      <optional>true</optional>
+    </dependency>
+
+    <dependency>
+      <groupId>org.sonatype.nexus</groupId>
+      <artifactId>nexus-repository-content</artifactId>
+      <scope>provided</scope>
+      <optional>true</optional>
     </dependency>
 
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-compress</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
-      <groupId>se.sawano.java</groupId>
-      <artifactId>alphanumeric-comparator</artifactId>
+      <groupId>org.sonatype.nexus</groupId>
+      <artifactId>nexus-cleanup</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.sonatype.nexus</groupId>
+      <artifactId>nexus-rapture</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -62,12 +77,6 @@
       <groupId>org.spockframework</groupId>
       <artifactId>spock-core</artifactId>
       <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.sonatype.nexus</groupId>
-      <artifactId>nexus-rapture</artifactId>
-      <scope>provided</scope>
     </dependency>
 
   </dependencies>
@@ -95,7 +104,39 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.20</version>
+        <version>3.0.0-M4</version>
+        <configuration>
+          <useSystemClassLoader>false</useSystemClassLoader>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>enforce-java</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+            <configuration>
+              <rules>
+                <!--
+                Ensure use of Java 8, as required by NXRM
+                -->
+                <requireJavaVersion>
+                  <version>[1.8,1.9)</version>
+                </requireJavaVersion>
+                <!--
+                Require Maven 3.3.3+
+                -->
+                <requireMavenVersion>
+                  <version>[3.3.3,)</version>
+                </requireMavenVersion>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
 
     </plugins>
