@@ -11,6 +11,7 @@ import org.sonatype.nexus.repository.chef.internal.ChefAttributesExtractor;
 import org.sonatype.nexus.repository.chef.internal.ChefAttributes;
 import org.sonatype.nexus.repository.chef.internal.ChefFormat;
 import org.sonatype.nexus.repository.chef.internal.AssetKind;
+import org.sonatype.nexus.repository.chef.internal.util.AttributesHelper;
 import org.sonatype.nexus.repository.chef.internal.util.ChefWritePolicySelector;
 import org.sonatype.nexus.repository.chef.internal.util.ChefPathUtils;
 import org.sonatype.nexus.repository.config.Configuration;
@@ -119,7 +120,7 @@ public class ChefContentFacetImpl
 
         try {
             asset.formatAttributes().clear();
-            asset.formatAttributes().set(P_ASSET_KIND, assetKind.name());
+            asset.formatAttributes().set(P_ASSET_KIND, AttributesHelper.standardizeAttributeValue(assetKind.name()));
             cookbookAttributes.getAttributesMap().forEach((key, value) -> asset.formatAttributes().set(key, value));
         } catch (Exception e) {
             log.warn("Error extracting format attributes for {}, skipping", path, e);
