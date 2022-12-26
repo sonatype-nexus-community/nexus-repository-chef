@@ -56,6 +56,8 @@ public class ChefHostedDownloadHandler implements Handler {
         if (content == null) {
             return HttpResponses.notFound();
         }
+
+        // Try to set filename according to content attributes
         String fileName;
         try {
             String fullPath = content.getAttributes().get("org.sonatype.nexus.repository.storage.Asset", Asset.class, null).name();

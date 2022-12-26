@@ -87,18 +87,20 @@ public class SupermarketJsonArtifactsFacetImpl extends FacetSupport implements S
     @Subscribe
     @Guarded(by = STARTED)
     public void on(final ChefHostedMetadataInvalidationEvent event) throws IOException {
-        log.debug("on ChefSupermarketHostedMetadataInvalidationEvent, event: " + event.toString());
+        log.debug("on ChefHostedMetadataInvalidationEvent, event: " + event.toString());
         if (getRepository().getName().equals(event.getRepositoryName())) {
             ChefHostedFacet hostedFacet = getRepository().facet(ChefHostedFacet.class);
             UnitOfWork.begin(getRepository().facet(StorageFacet.class).txSupplier());
             try {
+                String cookbookName = event.getCookbookName();
+                String cookbookVersion = event.getCookbookVersion();
                 hostedFacet.rebuildUniverseJson(buildUniverseJson());
                 hostedFacet.rebuildCookbookInfoJson(
-                        ChefPathUtils.buildInternalCookbookInfoJsonPath(event.getCookbookName()),
-                        buildCookbookInfoJson(event.getCookbookName()));
+                        ChefPathUtils.buildInternalCookbookInfoJsonPath(cookbookName),
+                        buildCookbookInfoJson(cookbookName));
                 hostedFacet.rebuildCookbookVersionInfoJson(
-                        ChefPathUtils.buildInternalCookbookVersionInfoJsonPath(event.getCookbookName(), event.getCookbookVersion()),
-                        buildCookbookVersionInfoJson(event.getCookbookName(), event.getCookbookVersion()));
+                        ChefPathUtils.buildInternalCookbookVersionInfoJsonPath(cookbookName, cookbookVersion),
+                        buildCookbookVersionInfoJson(cookbookName, cookbookVersion));
             } finally {
                 UnitOfWork.end();
             }
@@ -112,6 +114,7 @@ public class SupermarketJsonArtifactsFacetImpl extends FacetSupport implements S
         CookbookVersionInfoJsonModelBuilder builder = null;
         String baseNexusUrl = getRepository().getUrl();
 
+        // Find the artifact corresponding to this cookbook name and version
         for (Asset asset : tx.findAssets(
                 Query.builder()
                         .where(String.format("attributes.%s.%s", ChefFormat.NAME, P_ASSET_KIND))
@@ -142,6 +145,7 @@ public class SupermarketJsonArtifactsFacetImpl extends FacetSupport implements S
 
         StorageTx tx = UnitOfWork.currentTx();
 
+        // Iterate over all cookbooks stored in the repo, adding them to the builder
         for (Asset asset : tx.findAssets(
                 Query.builder()
                         .where(String.format("attributes.%s.%s", ChefFormat.NAME, P_ASSET_KIND))
@@ -171,6 +175,7 @@ public class SupermarketJsonArtifactsFacetImpl extends FacetSupport implements S
         CookbookInfoJsonModelBuilder builder = new CookbookInfoJsonModelBuilder(getRepository().getUrl());
         StorageTx tx = UnitOfWork.currentTx();
 
+        // Iterate over all versions of this cookbook
         for (Asset asset : tx.findAssets(
                 Query.builder()
                         .where(String.format("attributes.%s.%s", ChefFormat.NAME, ChefAttributes.P_NAME))

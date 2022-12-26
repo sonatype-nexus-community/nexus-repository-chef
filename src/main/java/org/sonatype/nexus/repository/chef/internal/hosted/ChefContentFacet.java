@@ -12,7 +12,7 @@ public interface ChefContentFacet extends Facet {
 
     Content get(String path) throws IOException;
 
-    Content putMetadata(String Path, Payload payload, AssetKind assetKind) throws IOException;
+    void putMetadata(String Path, Payload payload, AssetKind assetKind) throws IOException;
 
     Content put(Payload payload) throws IOException;
 }

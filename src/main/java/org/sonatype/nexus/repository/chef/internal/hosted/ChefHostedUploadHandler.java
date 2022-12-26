@@ -65,8 +65,12 @@ public class ChefHostedUploadHandler extends UploadHandlerSupport {
         }
 
         List<ChefResponseContent> chefResponseContents = getResponseContents(repository, payloads);
-        List<Content> contentList = chefResponseContents.stream().map(ChefResponseContent::getContent).collect(Collectors.toList());
-        List<String> pathList = chefResponseContents.stream().map(ChefResponseContent::getPathToContent).collect(Collectors.toList());
+        List<Content> contentList = new ArrayList<>();
+        List<String> pathList = new ArrayList<>();
+        chefResponseContents.stream().forEach(chefResponseContent -> {
+            contentList.add(chefResponseContent.getContent());
+            pathList.add(chefResponseContent.getPathToContent());
+        });
 
         return new UploadResponse(contentList, pathList);
     }
@@ -88,7 +92,6 @@ public class ChefHostedUploadHandler extends UploadHandlerSupport {
         return responseContents;
     }
 
-    // For now this is convoluted and not really needed - it will be useful when path is created from metadata inside tarball
     private String getPathFromUploadedContent(Content content) {
         Object asset = content.getAttributes().get(Asset.class.getName());
         if (asset instanceof Asset && ((Asset) asset).name() != null) {

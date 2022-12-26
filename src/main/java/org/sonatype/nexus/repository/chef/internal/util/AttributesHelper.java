@@ -1,8 +1,8 @@
 package org.sonatype.nexus.repository.chef.internal.util;
 
-import com.google.common.base.*;
-import org.slf4j.*;
-import org.sonatype.goodies.common.*;
+import com.google.common.base.Preconditions;
+import org.slf4j.Logger;
+import org.sonatype.goodies.common.Loggers;
 
 import java.util.*;
 
@@ -15,7 +15,7 @@ public class AttributesHelper {
     strings as null.
      */
     public static String standardizeAttributeValue(String s) {
-        return (s == null || s.equals(" ")) ? null : s.trim();
+        return (s == null || s.trim().equals("")) ? null : s.trim();
     }
 
     // Parse the dependencies / supports string into a Map

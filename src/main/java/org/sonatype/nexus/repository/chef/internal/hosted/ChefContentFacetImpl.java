@@ -11,7 +11,6 @@ import org.sonatype.nexus.repository.chef.internal.ChefAttributesExtractor;
 import org.sonatype.nexus.repository.chef.internal.ChefAttributes;
 import org.sonatype.nexus.repository.chef.internal.ChefFormat;
 import org.sonatype.nexus.repository.chef.internal.AssetKind;
-import org.sonatype.nexus.repository.chef.internal.util.AttributesHelper;
 import org.sonatype.nexus.repository.chef.internal.util.ChefWritePolicySelector;
 import org.sonatype.nexus.repository.chef.internal.util.ChefPathUtils;
 import org.sonatype.nexus.repository.config.Configuration;
@@ -93,14 +92,15 @@ public class ChefContentFacetImpl
     }
 
     @Override
-    public Content putMetadata(final String path, final Payload payload, final AssetKind assetKind) throws IOException {
+    public void putMetadata(final String path, final Payload payload, final AssetKind assetKind) throws IOException {
         StorageFacet storageFacet = facet(StorageFacet.class);
         try (TempBlob tempBlob = storageFacet.createTempBlob(payload, hashAlgorithms)) {
             switch (assetKind) {
                 case UNIVERSE_JSON:
                 case COOKBOOK_VERSION_INFO:
                 case COOKBOOK_INFO:
-                    return doPutMetadata(path, tempBlob, payload, assetKind);
+                    doPutMetadata(path, tempBlob, payload, assetKind);
+                    break;
                 default:
                     throw new IllegalStateException("Unexpected asset kind: " + assetKind);
             }
@@ -108,7 +108,7 @@ public class ChefContentFacetImpl
     }
 
     @TransactionalStoreBlob
-    protected Content doPutMetadata(final String path,
+    protected void doPutMetadata(final String path,
                                     final TempBlob tempBlob,
                                     final Payload payload,
                                     final AssetKind assetKind)
@@ -132,8 +132,6 @@ public class ChefContentFacetImpl
         );
 
         tx.saveAsset(asset);
-
-        return toContent(asset, assetBlob.getBlob());
     }
 
     @TransactionalStoreBlob
@@ -174,20 +172,20 @@ public class ChefContentFacetImpl
     public Asset getOrCreateAsset(final String path,
                                   final String name,
                                   final String version) {
-        log.debug(String.format("in getOrCreateAsset. path=%s, name=%s, version=%s", path, name, version));
+        log.info(String.format("in getOrCreateAsset. path=%s, name=%s, version=%s", path, name, version));
         final StorageTx tx = UnitOfWork.currentTx();
         final Bucket bucket = tx.findBucket(getRepository());
 
         Component component = findComponent(tx, name, version);
         if (component == null) {
-            log.debug("findComponent returned null");
+            log.info("findComponent returned null");
             component = tx.createComponent(bucket, format).name(name).version(version);
             tx.saveComponent(component);
         }
 
         Asset asset = findAsset(tx, path);
         if (asset == null) {
-            log.debug("findAsset returned null");
+            log.info("findAsset returned null");
             asset = tx.createAsset(bucket, component);
             asset.name(path);
         }
@@ -204,6 +202,7 @@ public class ChefContentFacetImpl
 
         Asset asset = findAsset(tx, path);
         if (asset == null) {
+            log.info("findAsset returned null");
             asset = tx.createAsset(bucket, format);
             asset.name(path);
         }
@@ -216,21 +215,23 @@ public class ChefContentFacetImpl
 
     @Nullable
     private Asset findAsset(final StorageTx tx, final String path) {
-        log.trace(String.format("in findAsset. path=%s", path));
+        log.info(String.format("in findAsset. path=%s", path));
         return tx.findAssetWithProperty(ChefAttributes.P_NAME, path, tx.findBucket(getRepository()));
     }
 
     @Nullable
     private Component findComponent(final StorageTx tx, final String name, final String version) {
-        log.trace(String.format("in findComponent. name=%s, version=%s", name, version));
+        log.info(String.format("in findComponent. name=%s, version=%s", name, version));
         Iterable<Component> components = tx.findComponents(Query.builder()
                         .where(ChefAttributes.P_NAME).eq(name)
                         .and(ChefAttributes.P_VERSION).eq(version)
                         .build(),
                 singletonList(getRepository()));
         if (components.iterator().hasNext()) {
+            log.info("in findComponent. Found component.");
             return components.iterator().next();
         }
+        log.info("in findComponent. Did not find component.");
         return null;
     }
 

@@ -13,7 +13,7 @@ import java.util.Map;
 public class UniverseJsonModelBuilder {
     protected static final Logger log = Preconditions.checkNotNull(Loggers.getLogger(UniverseJsonModelBuilder.class));
 
-    private Map<String, UniverseJsonCookbookModel> cookbooks;
+    private final Map<String, UniverseJsonCookbookModel> cookbooks;
 
     public UniverseJsonModelBuilder() {
         cookbooks = new HashMap<>();
@@ -31,7 +31,7 @@ public class UniverseJsonModelBuilder {
                 cookbookVersions.put(cookbookVersion, versionModel);
             }
         } else {
-            HashMap<String, UniverseJsonCookbookVersionModel> versionsMap = new HashMap<>();
+            Map<String, UniverseJsonCookbookVersionModel> versionsMap = new HashMap<>();
             versionsMap.put(cookbookVersion, versionModel);
             UniverseJsonCookbookModel cookbookVersions = new UniverseJsonCookbookModel(versionsMap);
             log.trace(String.format("Putting cookbook in UniverseJsonBuilder: name=%s, version=%s", cookbookName, cookbookVersion));
