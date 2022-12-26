@@ -19,19 +19,74 @@ import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class ChefPathUtils {
-    private static final String COOKBOOK_TARBALL_PATH = "%s/%s/%s-%s.tgz";
+
+    // Internal paths to chef artifacts
+    private static final String INTERNAL_COOKBOOK_TARBALL_PATH = "%s/%s/%s-%s.tgz";
+    private static final String INTERNAL_UNIVERSE_JSON_PATH = "/universe.json";
+    private static final String INTERNAL_COOKBOOK_INFO_JSON_PATH = "%s/cookbook_info.json";
+    private static final String INTERNAL_COOKBOOK_VERSION_INFO_JSON_PATH = "%s/%s/cookbook_version_info.json";
+
+    // Supermarket API urls
+    private static final String SUPERMARKET_UNIVERSE_PATH = "/universe";
+    private static final String SUPERMARKET_COOKBOOK_VERSION_PATH = "/api/v1/cookbooks/%s/versions/%s";
+    private static final String SUPERMARKET_COOKBOOK_INFO_PATH = "/api/v1/cookbooks/%s";
+    private static final String SUPERMARKET_COOKBOOK_VERSION_DOWNLOAD_PATH = "/api/v1/cookbooks/%s/versions/%s/download";
+
     private static final String PLACEHOLDER_NAME = "placeholder_cookbook_name";
     private static final String PLACEHOLDER_VERSION = "placeholder_cookbook_version";
 
-    public static String buildTarballPath(final Context context) {
-        return buildTarballPath(
+
+    public static String buildInternalTarballPath(final String cookbookName, final String cookbookVersion) {
+        return String.format(INTERNAL_COOKBOOK_TARBALL_PATH,
+                cookbookName, cookbookVersion, cookbookName, cookbookVersion);
+    }
+
+    public static String buildInternalPlaceholderPathForPermissionCheck() {
+        return buildInternalTarballPath(PLACEHOLDER_NAME, PLACEHOLDER_VERSION);
+    }
+
+    public static String buildInternalUniverseJsonPath() {
+        return INTERNAL_UNIVERSE_JSON_PATH;
+    }
+
+    public static String buildInternalTarballPath(final Context context) {
+        return buildInternalTarballPath(
                 getCookbookNameToken(context),
                 getCookbookVersionToken(context)
         );
     }
 
-    public static String buildTarballPath(final String cookbookName, final String cookbookVersion) {
-        return String.format(COOKBOOK_TARBALL_PATH, cookbookName, cookbookVersion, cookbookName, cookbookVersion);
+    public static String buildInternalCookbookInfoJsonPath(final Context context) {
+        return buildInternalCookbookInfoJsonPath(
+                getCookbookNameToken(context)
+        );
+    }
+
+    public static String buildInternalCookbookVersionInfoJsonPath(final Context context) {
+        return buildInternalCookbookVersionInfoJsonPath(
+                getCookbookNameToken(context),
+                getCookbookVersionToken(context)
+        );
+    }
+
+    public static String buildInternalCookbookInfoJsonPath(final String cookbookName) {
+        return String.format(INTERNAL_COOKBOOK_INFO_JSON_PATH, cookbookName);
+    }
+
+    public static String buildInternalCookbookVersionInfoJsonPath(final String cookbookName, final String cookbookVersion) {
+        return String.format(INTERNAL_COOKBOOK_VERSION_INFO_JSON_PATH, cookbookName, cookbookVersion);
+    }
+
+    public static String buildSupermarketCookbookVersionUrl(final String baseUrl, final String cookbookName, final String cookbookVersion) {
+        return baseUrl.concat(String.format(SUPERMARKET_COOKBOOK_VERSION_PATH, cookbookName, cookbookVersion));
+    }
+
+    public static String buildSupermarketCookbookUrl(final String baseUrl, final String cookbookName) {
+        return baseUrl.concat(String.format(SUPERMARKET_COOKBOOK_INFO_PATH, cookbookName));
+    }
+
+    public static String buildSupermarketCookbookVersionDownloadUrl(final String baseUrl, final String cookbookName, final String cookbookVersion) {
+        return baseUrl.concat(String.format(SUPERMARKET_COOKBOOK_VERSION_DOWNLOAD_PATH, cookbookName, cookbookVersion));
     }
 
     private ChefPathUtils() {
@@ -46,9 +101,5 @@ public final class ChefPathUtils {
     private static String getCookbookNameToken(final Context context) {
         TokenMatcher.State state = context.getAttributes().require(TokenMatcher.State.class);
         return checkNotNull(state.getTokens().get(ChefHostedRecipe.NAME_TOKEN));
-    }
-
-    public static String buildPlaceholderPathForPermissionCheck() {
-        return buildTarballPath(PLACEHOLDER_NAME, PLACEHOLDER_VERSION);
     }
 }

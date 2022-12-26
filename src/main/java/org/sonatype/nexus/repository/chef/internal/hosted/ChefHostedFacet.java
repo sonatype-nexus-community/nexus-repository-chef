@@ -15,4 +15,9 @@ public interface ChefHostedFacet
     @Nullable
     Content get(String path) throws IOException;
 
+    void rebuildUniverseJson(Content content) throws IOException;
+
+    void rebuildCookbookInfoJson(String path, Content content) throws IOException;
+
+    void rebuildCookbookVersionInfoJson(String path, Content content) throws IOException;
 }

@@ -1,6 +1,5 @@
 package org.sonatype.nexus.repository.chef.internal.hosted
 
-import org.elasticsearch.common.recycler.Recycler
 import org.sonatype.nexus.repository.Format
 import org.sonatype.nexus.repository.RecipeSupport
 import org.sonatype.nexus.repository.Repository
@@ -11,6 +10,7 @@ import org.sonatype.nexus.repository.cache.NegativeCacheHandler
 import org.sonatype.nexus.repository.chef.internal.AssetKind
 import org.sonatype.nexus.repository.chef.internal.ChefFormat
 import org.sonatype.nexus.repository.chef.internal.security.ChefSecurityFacet
+import org.sonatype.nexus.repository.chef.internal.supermarket.SupermarketJsonArtifactsFacet
 import org.sonatype.nexus.repository.content.search.SearchFacet
 import org.sonatype.nexus.repository.http.HttpHandlers
 import org.sonatype.nexus.repository.http.PartialFetchHandler
@@ -32,6 +32,7 @@ import org.sonatype.nexus.repository.view.handlers.ConditionalRequestHandler
 import org.sonatype.nexus.repository.view.handlers.ContentHeadersHandler
 import org.sonatype.nexus.repository.view.handlers.HandlerContributor
 import org.sonatype.nexus.repository.view.matchers.ActionMatcher
+import org.sonatype.nexus.repository.view.matchers.RegexMatcher
 import org.sonatype.nexus.repository.view.matchers.logic.LogicMatchers
 import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher
 
@@ -62,6 +63,9 @@ class ChefHostedRecipe
 
     @Inject
     Provider<ChefContentFacet> contentFacet
+
+    @Inject
+    Provider<SupermarketJsonArtifactsFacet> supermarketJsonArtifactsFacet
 
     @Inject
     Provider<ChefSecurityFacet> securityFacet
@@ -130,6 +134,7 @@ class ChefHostedRecipe
     void apply(@Nonnull final Repository repository) throws Exception {
         repository.attach(storageFacet.get())
         repository.attach(contentFacet.get())
+        repository.attach(supermarketJsonArtifactsFacet.get())
         repository.attach(securityFacet.get())
         repository.attach(configure(viewFacet.get()))
         repository.attach(componentMaintenanceFacet.get())
@@ -144,9 +149,48 @@ class ChefHostedRecipe
     private ViewFacet configure(final ConfigurableViewFacet facet) {
         Router.Builder builder = new Router.Builder()
 
-        builder.route(tarballMatcherForGUIBrowsing()
+        builder.route(tarballMatcher()
                 .handler(timingHandler)
                 .handler(assetKindHandler.rcurry(AssetKind.COOKBOOK))
+                .handler(securityHandler)
+                .handler(exceptionHandler)
+                .handler(handlerContributor)
+                .handler(conditionalRequestHandler)
+                .handler(partialFetchHandler)
+                .handler(contentHeadersHandler)
+                .handler(unitOfWorkHandler)
+                .handler(downloadHandler)
+                .create())
+
+        builder.route(supermarketUniverseMatcher()
+                .handler(timingHandler)
+                .handler(assetKindHandler.rcurry(AssetKind.UNIVERSE_JSON))
+                .handler(securityHandler)
+                .handler(exceptionHandler)
+                .handler(handlerContributor)
+                .handler(conditionalRequestHandler)
+                .handler(partialFetchHandler)
+                .handler(contentHeadersHandler)
+                .handler(unitOfWorkHandler)
+                .handler(downloadHandler)
+                .create())
+
+        builder.route(supermarketCookbookVersionMatcher()
+                .handler(timingHandler)
+                .handler(assetKindHandler.rcurry(AssetKind.COOKBOOK_VERSION_INFO))
+                .handler(securityHandler)
+                .handler(exceptionHandler)
+                .handler(handlerContributor)
+                .handler(conditionalRequestHandler)
+                .handler(partialFetchHandler)
+                .handler(contentHeadersHandler)
+                .handler(unitOfWorkHandler)
+                .handler(downloadHandler)
+                .create())
+
+        builder.route(supermarketCookbookInfoMatcher()
+                .handler(timingHandler)
+                .handler(assetKindHandler.rcurry(AssetKind.COOKBOOK_INFO))
                 .handler(securityHandler)
                 .handler(exceptionHandler)
                 .handler(handlerContributor)
@@ -183,11 +227,44 @@ class ChefHostedRecipe
         return context.proceed()
     }
 
-    static Route.Builder tarballMatcherForGUIBrowsing() {
+    static Route.Builder tarballMatcher() {
         new Route.Builder().matcher(
                 LogicMatchers.and(
                         new ActionMatcher(GET, HEAD),
-                        new TokenMatcher(String.format("/{%s:.+}/{%s:.+}/{filename:.+}.tgz", NAME_TOKEN, VERSION_TOKEN))
+                        LogicMatchers.or(
+                                new TokenMatcher(String.format("/{%s:.+}/{%s:.+}/{filename:.+}.tgz", NAME_TOKEN, VERSION_TOKEN)),
+                                new TokenMatcher("/api/v1/cookbooks/{name:.+}/versions/{version:.+}/download")
+                        )
+                ))
+    }
+
+    static Route.Builder supermarketUniverseMatcher() {
+        new Route.Builder().matcher(
+                LogicMatchers.and(
+                        new ActionMatcher(GET, HEAD),
+                        new RegexMatcher('/universe[.json]*')
+                ))
+    }
+
+    static Route.Builder supermarketCookbookVersionMatcher() {
+        new Route.Builder().matcher(
+                LogicMatchers.and(
+                        new ActionMatcher(GET, HEAD),
+                        LogicMatchers.or(
+                                new TokenMatcher("/api/v1/cookbooks/{name:.+}/versions/{version:.+}"),
+                                new TokenMatcher("/{name:.+}/{version:.+}/cookbook_version_info.json")
+                        )
+                ))
+    }
+
+    static Route.Builder supermarketCookbookInfoMatcher() {
+        new Route.Builder().matcher(
+                LogicMatchers.and(
+                        new ActionMatcher(GET, HEAD),
+                        LogicMatchers.or(
+                                new TokenMatcher("/api/v1/cookbooks/{name:.+}"),
+                                new TokenMatcher("/{name:.+}/cookbook_info.json")
+                        )
                 ))
     }
 

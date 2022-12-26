@@ -1,7 +1,6 @@
 package org.sonatype.nexus.repository.chef.internal.hosted;
 
 import com.google.common.base.Preconditions;
-import org.apache.commons.lang.NotImplementedException;
 import org.slf4j.Logger;
 import org.sonatype.goodies.common.Loggers;
 import org.sonatype.nexus.repository.Repository;
@@ -19,7 +18,10 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.ws.rs.core.HttpHeaders;
 
-import static org.sonatype.nexus.repository.chef.internal.util.ChefPathUtils.buildTarballPath;
+import static org.sonatype.nexus.repository.chef.internal.util.ChefPathUtils.buildInternalCookbookInfoJsonPath;
+import static org.sonatype.nexus.repository.chef.internal.util.ChefPathUtils.buildInternalCookbookVersionInfoJsonPath;
+import static org.sonatype.nexus.repository.chef.internal.util.ChefPathUtils.buildInternalTarballPath;
+import static org.sonatype.nexus.repository.chef.internal.util.ChefPathUtils.buildInternalUniverseJsonPath;
 
 @Named
 @Singleton
@@ -35,16 +37,16 @@ public class ChefHostedDownloadHandler implements Handler {
         switch (assetKind) {
             case COOKBOOK:
                 log.trace("in handle, case COOKBOOK");
-                return responseForTarball(hostedFacet.get(buildTarballPath(context)));
+                return responseForTarball(hostedFacet.get(buildInternalTarballPath(context)));
             case UNIVERSE_JSON:
                 log.trace("in handle, case UNIVERSE_JSON");
-                throw new NotImplementedException("UNIVERSE_JSON not yet implemented");
+                return responseForMetadata(hostedFacet.get(buildInternalUniverseJsonPath()));
             case COOKBOOK_INFO:
                 log.trace("in handle, case COOKBOOK_INFO");
-                throw new NotImplementedException("COOKBOOK_INFO not yet implemented");
+                return responseForMetadata(hostedFacet.get(buildInternalCookbookInfoJsonPath(context)));
             case COOKBOOK_VERSION_INFO:
                 log.trace("in handle, case COOKBOOK_VERSION_INFO");
-                throw new NotImplementedException("COOKBOOK_VERSION_INFO not yet implemented");
+                return responseForMetadata(hostedFacet.get(buildInternalCookbookVersionInfoJsonPath(context)));
             default:
                 throw new IllegalStateException("Unexpected assetKind: " + assetKind);
         }
@@ -68,5 +70,12 @@ public class ChefHostedDownloadHandler implements Handler {
         Response response = HttpResponses.ok(content);
         response.getHeaders().set(HttpHeaders.CONTENT_DISPOSITION, String.format("attachment; filename=%s", fileName));
         return response;
+    }
+
+    private Response responseForMetadata(@Nullable final Content content) {
+        if (content == null) {
+            return HttpResponses.notFound();
+        }
+        return HttpResponses.ok(content);
     }
 }

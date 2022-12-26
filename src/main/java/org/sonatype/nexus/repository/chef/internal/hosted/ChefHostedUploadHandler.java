@@ -57,7 +57,7 @@ public class ChefHostedUploadHandler extends UploadHandlerSupport {
 
         // We don't yet know the final path to save the tarball at, as it depends on metadata inside the tarball
         // Thus we test permissions on a fixed placeholder path
-        final String placeholderPath = ChefPathUtils.buildPlaceholderPathForPermissionCheck();
+        final String placeholderPath = ChefPathUtils.buildInternalPlaceholderPathForPermissionCheck();
 
         for (AssetUpload asset : upload.getAssetUploads()) {
             ensurePermitted(repository.getName(), ChefFormat.NAME, placeholderPath, emptyMap());

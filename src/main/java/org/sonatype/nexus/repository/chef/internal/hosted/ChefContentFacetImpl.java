@@ -88,20 +88,59 @@ public class ChefContentFacetImpl
     public Content put(final Payload payload) throws IOException {
         StorageFacet storageFacet = facet(StorageFacet.class);
         try (TempBlob tempBlob = storageFacet.createTempBlob(payload, hashAlgorithms)) {
-            return doPutContent(tempBlob, payload, AssetKind.COOKBOOK);
+            return doPutCookbook(tempBlob, payload);
+        }
+    }
+
+    @Override
+    public Content putMetadata(final String path, final Payload payload, final AssetKind assetKind) throws IOException {
+        StorageFacet storageFacet = facet(StorageFacet.class);
+        try (TempBlob tempBlob = storageFacet.createTempBlob(payload, hashAlgorithms)) {
+            switch (assetKind) {
+                case UNIVERSE_JSON:
+                case COOKBOOK_VERSION_INFO:
+                case COOKBOOK_INFO:
+                    return doPutMetadata(path, tempBlob, payload, assetKind);
+                default:
+                    throw new IllegalStateException("Unexpected asset kind: " + assetKind);
+            }
         }
     }
 
     @TransactionalStoreBlob
-    protected Content doPutContent(final TempBlob tempBlob,
-                                   final Payload payload,
-                                   final AssetKind assetKind
-    )
+    protected Content doPutMetadata(final String path,
+                                    final TempBlob tempBlob,
+                                    final Payload payload,
+                                    final AssetKind assetKind)
             throws IOException {
+        log.trace("in doPutMetadata");
+        StorageTx tx = UnitOfWork.currentTx();
+        Asset asset = getOrCreateAsset(path);
+        asset.formatAttributes().set(P_ASSET_KIND, assetKind.toString());
+
+        if (payload instanceof Content) {
+            Content.applyToAsset(asset, Content.maintainLastModified(asset, ((Content) payload).getAttributes()));
+        }
+
+        AssetBlob assetBlob = tx.setBlob(
+                asset,
+                path,
+                tempBlob,
+                null,
+                payload.getContentType(),
+                false
+        );
+
+        tx.saveAsset(asset);
+
+        return toContent(asset, assetBlob.getBlob());
+    }
+
+    @TransactionalStoreBlob
+    protected Content doPutCookbook(final TempBlob tempBlob, final Payload payload) throws IOException {
         StorageTx tx = UnitOfWork.currentTx();
         ChefAttributes cookbookAttributes = chefAttributesExtractor.getAttributes(tempBlob);
-
-        final String path = ChefPathUtils.buildTarballPath(cookbookAttributes.getName(), cookbookAttributes.getVersion());
+        final String path = ChefPathUtils.buildInternalTarballPath(cookbookAttributes.getName(), cookbookAttributes.getVersion());
 
         Asset asset = getOrCreateAsset(path, cookbookAttributes.getName(), cookbookAttributes.getVersion());
 
@@ -120,7 +159,7 @@ public class ChefContentFacetImpl
 
         try {
             asset.formatAttributes().clear();
-            asset.formatAttributes().set(P_ASSET_KIND, AttributesHelper.standardizeAttributeValue(assetKind.name()));
+            asset.formatAttributes().set(P_ASSET_KIND, AssetKind.COOKBOOK.name());
             cookbookAttributes.getAttributesMap().forEach((key, value) -> asset.formatAttributes().set(key, value));
         } catch (Exception e) {
             log.warn("Error extracting format attributes for {}, skipping", path, e);
@@ -157,6 +196,23 @@ public class ChefContentFacetImpl
 
         return asset;
     }
+
+    @TransactionalStoreMetadata
+    public Asset getOrCreateAsset(final String path) {
+        final StorageTx tx = UnitOfWork.currentTx();
+        final Bucket bucket = tx.findBucket(getRepository());
+
+        Asset asset = findAsset(tx, path);
+        if (asset == null) {
+            asset = tx.createAsset(bucket, format);
+            asset.name(path);
+        }
+
+        asset.markAsDownloaded();
+
+        return asset;
+    }
+
 
     @Nullable
     private Asset findAsset(final StorageTx tx, final String path) {
