@@ -5,7 +5,6 @@ import org.sonatype.nexus.repository.chef.internal.AssetKind;
 import org.sonatype.nexus.repository.transaction.TransactionalStoreBlob;
 import org.sonatype.nexus.repository.view.Content;
 import org.sonatype.nexus.repository.view.Payload;
-import org.sonatype.nexus.repository.chef.internal.util.ChefPathUtils;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -31,23 +30,13 @@ public class ChefHostedFacetImpl extends FacetSupport implements ChefHostedFacet
 
     @Override
     @TransactionalStoreBlob
-    public void rebuildUniverseJson(Content content) throws IOException {
-        log.trace("in rebuildUniverseJson");
-        content().putMetadata(ChefPathUtils.buildInternalUniverseJsonPath(), content, AssetKind.UNIVERSE_JSON);
-    }
-
-    @Override
-    @TransactionalStoreBlob
-    public void rebuildCookbookInfoJson(String path, Content content) throws IOException {
-        log.trace("in rebuildCookbookInfoJson");
-        content().putMetadata(path, content, AssetKind.COOKBOOK_INFO);
-    }
-
-    @Override
-    @TransactionalStoreBlob
-    public void rebuildCookbookVersionInfoJson(String path, Content content) throws IOException {
-        log.trace("in rebuildCookbookVersionInfoJson");
-        content().putMetadata(path, content, AssetKind.COOKBOOK_VERSION_INFO);
+    public void rebuildMetadataJson(String path, Content content, AssetKind assetKind) throws IOException {
+        log.trace(String.format("in rebuildMetadataJson, path=%s, AssetKind=%s", path, assetKind.name()));
+        if (content != null) {
+            content().putMetadata(path, content, assetKind);
+        } else {
+            content().deleteMetadata(path, assetKind);
+        }
     }
 
     private ChefContentFacet content() {

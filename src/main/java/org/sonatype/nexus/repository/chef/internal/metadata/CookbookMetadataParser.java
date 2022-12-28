@@ -106,7 +106,6 @@ public class CookbookMetadataParser {
         return cookbookMetadata;
     }
 
-    // TODO This helper method needs a better name
     private String getMetadataValueFromTwoSources(String fromRuby, String fromJson) {
         if (fromRuby == null) {
             log.debug(String.format("Value from metadata.rb is null, using value from metadata.json. metadata.rb=null, metadata.json=%s",
@@ -120,7 +119,7 @@ public class CookbookMetadataParser {
             log.debug(String.format("Values from metadata.rb and metadata.json are equal. value=%s", fromRuby));
             return fromRuby;
         } else {
-            log.warn(String.format("Different metadata values found for same metadata type: metadata.rb=%s, metadata.json=%s. Using %s.", fromRuby, fromJson, fromJson));
+            log.info(String.format("Different metadata values found for same metadata type: metadata.rb=%s, metadata.json=%s. Using %s.", fromRuby, fromJson, fromJson));
             return fromJson;
         }
     }

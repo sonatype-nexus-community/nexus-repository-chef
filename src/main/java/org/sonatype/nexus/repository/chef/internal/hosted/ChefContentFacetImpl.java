@@ -1,8 +1,5 @@
 package org.sonatype.nexus.repository.chef.internal.hosted;
 
-import com.google.common.base.Preconditions;
-import org.slf4j.Logger;
-import org.sonatype.goodies.common.Loggers;
 import org.sonatype.nexus.blobstore.api.Blob;
 import org.sonatype.nexus.common.hash.HashAlgorithm;
 import org.sonatype.nexus.repository.FacetSupport;
@@ -42,13 +39,13 @@ import static org.sonatype.nexus.common.hash.HashAlgorithm.MD5;
 import static org.sonatype.nexus.common.hash.HashAlgorithm.SHA1;
 import static org.sonatype.nexus.common.hash.HashAlgorithm.SHA256;
 import static org.sonatype.nexus.repository.storage.AssetEntityAdapter.P_ASSET_KIND;
+import static org.sonatype.nexus.repository.storage.ComponentEntityAdapter.P_VERSION;
+import static org.sonatype.nexus.repository.storage.ComponentEntityAdapter.P_NAME;
 
 @Named
 public class ChefContentFacetImpl
         extends FacetSupport
         implements ChefContentFacet {
-    protected static final Logger log = Preconditions.checkNotNull(Loggers.getLogger(ChefContentFacetImpl.class));
-
     private static final List<HashAlgorithm> hashAlgorithms = Arrays.asList(MD5, SHA1, SHA256);
 
     private final Format format;
@@ -107,22 +104,53 @@ public class ChefContentFacetImpl
         }
     }
 
+    @Override
+    public void deleteMetadata(final String path, final AssetKind assetKind) {
+        switch (assetKind) {
+            case UNIVERSE_JSON:
+            case COOKBOOK_VERSION_INFO:
+            case COOKBOOK_INFO:
+                doDeleteMetadata(path, assetKind);
+                break;
+            default:
+                throw new IllegalStateException("Unexpected asset kind: " + assetKind);
+        }
+    }
+
+    @TransactionalStoreBlob
+    protected void doDeleteMetadata(final String path, final AssetKind assetKind) {
+        log.trace("in doDeleteMetadata");
+        StorageTx tx = UnitOfWork.currentTx();
+        Asset asset = findAsset(tx, path);
+        if (asset != null) {
+            String foundAssetKind = asset.formatAttributes().get(P_ASSET_KIND, String.class, "");
+            if (foundAssetKind.equals(assetKind.name())) {
+                tx.deleteAsset(asset);
+                log.debug(String.format("Deleted metadata with path=%s and AssetKind=%s", path, assetKind.name()));
+            } else {
+                log.warn(String.format("Tried to delete metadata with path=%s and AssetKind=%s, but its actual AssetKind was %s", path, assetKind.name(), foundAssetKind));
+            }
+        } else {
+            log.warn(String.format("Tried to delete metadata with path=%s and AssetKind=%s, but it was not found", path, assetKind.name()));
+        }
+    }
+
     @TransactionalStoreBlob
     protected void doPutMetadata(final String path,
-                                    final TempBlob tempBlob,
-                                    final Payload payload,
-                                    final AssetKind assetKind)
+                                 final TempBlob tempBlob,
+                                 final Payload payload,
+                                 final AssetKind assetKind)
             throws IOException {
         log.trace("in doPutMetadata");
         StorageTx tx = UnitOfWork.currentTx();
         Asset asset = getOrCreateAsset(path);
-        asset.formatAttributes().set(P_ASSET_KIND, assetKind.toString());
+        asset.formatAttributes().set(P_ASSET_KIND, assetKind.name());
 
         if (payload instanceof Content) {
             Content.applyToAsset(asset, Content.maintainLastModified(asset, ((Content) payload).getAttributes()));
         }
 
-        AssetBlob assetBlob = tx.setBlob(
+        tx.setBlob(
                 asset,
                 path,
                 tempBlob,
@@ -155,13 +183,9 @@ public class ChefContentFacetImpl
                 false
         );
 
-        try {
-            asset.formatAttributes().clear();
-            asset.formatAttributes().set(P_ASSET_KIND, AssetKind.COOKBOOK.name());
-            cookbookAttributes.getAttributesMap().forEach((key, value) -> asset.formatAttributes().set(key, value));
-        } catch (Exception e) {
-            log.warn("Error extracting format attributes for {}, skipping", path, e);
-        }
+        asset.formatAttributes().clear();
+        asset.formatAttributes().set(P_ASSET_KIND, AssetKind.COOKBOOK.name());
+        cookbookAttributes.getAttributesMap().forEach((key, value) -> asset.formatAttributes().set(key, value));
 
         tx.saveAsset(asset);
 
@@ -172,20 +196,20 @@ public class ChefContentFacetImpl
     public Asset getOrCreateAsset(final String path,
                                   final String name,
                                   final String version) {
-        log.info(String.format("in getOrCreateAsset. path=%s, name=%s, version=%s", path, name, version));
+        log.trace(String.format("in getOrCreateAsset. path=%s, name=%s, version=%s", path, name, version));
         final StorageTx tx = UnitOfWork.currentTx();
         final Bucket bucket = tx.findBucket(getRepository());
 
         Component component = findComponent(tx, name, version);
         if (component == null) {
-            log.info("findComponent returned null");
+            log.trace("findComponent returned null");
             component = tx.createComponent(bucket, format).name(name).version(version);
             tx.saveComponent(component);
         }
 
         Asset asset = findAsset(tx, path);
         if (asset == null) {
-            log.info("findAsset returned null");
+            log.trace("findAsset returned null");
             asset = tx.createAsset(bucket, component);
             asset.name(path);
         }
@@ -202,7 +226,7 @@ public class ChefContentFacetImpl
 
         Asset asset = findAsset(tx, path);
         if (asset == null) {
-            log.info("findAsset returned null");
+            log.trace("findAsset returned null");
             asset = tx.createAsset(bucket, format);
             asset.name(path);
         }
@@ -215,23 +239,23 @@ public class ChefContentFacetImpl
 
     @Nullable
     private Asset findAsset(final StorageTx tx, final String path) {
-        log.info(String.format("in findAsset. path=%s", path));
-        return tx.findAssetWithProperty(ChefAttributes.P_NAME, path, tx.findBucket(getRepository()));
+        log.trace(String.format("in findAsset. path=%s", path));
+        return tx.findAssetWithProperty(P_NAME, path, tx.findBucket(getRepository()));
     }
 
     @Nullable
     private Component findComponent(final StorageTx tx, final String name, final String version) {
-        log.info(String.format("in findComponent. name=%s, version=%s", name, version));
+        log.trace(String.format("in findComponent. name=%s, version=%s", name, version));
         Iterable<Component> components = tx.findComponents(Query.builder()
-                        .where(ChefAttributes.P_NAME).eq(name)
-                        .and(ChefAttributes.P_VERSION).eq(version)
+                        .where(P_NAME).eq(name)
+                        .and(P_VERSION).eq(version)
                         .build(),
                 singletonList(getRepository()));
         if (components.iterator().hasNext()) {
-            log.info("in findComponent. Found component.");
+            log.trace("in findComponent. Found component.");
             return components.iterator().next();
         }
-        log.info("in findComponent. Did not find component.");
+        log.trace("in findComponent. Did not find component.");
         return null;
     }
 

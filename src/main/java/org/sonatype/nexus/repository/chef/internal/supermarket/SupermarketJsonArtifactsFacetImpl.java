@@ -29,9 +29,11 @@ import org.sonatype.nexus.repository.view.ContentTypes;
 import org.sonatype.nexus.repository.view.payloads.StringPayload;
 import org.sonatype.nexus.transaction.UnitOfWork;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Map;
 
 import static java.util.Collections.singletonList;
@@ -41,8 +43,6 @@ import static org.sonatype.nexus.repository.storage.AssetEntityAdapter.P_ASSET_K
 
 @Named
 public class SupermarketJsonArtifactsFacetImpl extends FacetSupport implements SupermarketJsonArtifactsFacet {
-
-    protected static final Logger log = Preconditions.checkNotNull(Loggers.getLogger(SupermarketJsonArtifactsFacetImpl.class));
 
     private static final ObjectMapper mapper = new ObjectMapper();
     private static final String BASE_LOCATION_TYPE = "opscode";
@@ -94,13 +94,21 @@ public class SupermarketJsonArtifactsFacetImpl extends FacetSupport implements S
             try {
                 String cookbookName = event.getCookbookName();
                 String cookbookVersion = event.getCookbookVersion();
-                hostedFacet.rebuildUniverseJson(buildUniverseJson());
-                hostedFacet.rebuildCookbookInfoJson(
+
+                hostedFacet.rebuildMetadataJson(
+                        ChefPathUtils.buildInternalUniverseJsonPath(),
+                        buildUniverseJson(),
+                        AssetKind.UNIVERSE_JSON);
+
+                hostedFacet.rebuildMetadataJson(
                         ChefPathUtils.buildInternalCookbookInfoJsonPath(cookbookName),
-                        buildCookbookInfoJson(cookbookName));
-                hostedFacet.rebuildCookbookVersionInfoJson(
+                        buildCookbookInfoJson(cookbookName),
+                        AssetKind.COOKBOOK_INFO);
+
+                hostedFacet.rebuildMetadataJson(
                         ChefPathUtils.buildInternalCookbookVersionInfoJsonPath(cookbookName, cookbookVersion),
-                        buildCookbookVersionInfoJson(cookbookName, cookbookVersion));
+                        buildCookbookVersionInfoJson(cookbookName, cookbookVersion),
+                        AssetKind.COOKBOOK_VERSION_INFO);
             } finally {
                 UnitOfWork.end();
             }
@@ -111,12 +119,12 @@ public class SupermarketJsonArtifactsFacetImpl extends FacetSupport implements S
     public Content buildCookbookVersionInfoJson(String cookbookName, String cookbookVersion) throws JsonProcessingException {
         StorageTx tx = UnitOfWork.currentTx();
 
-        CookbookVersionInfoJsonModelBuilder builder = null;
+        CookbookVersionInfoJsonModelBuilder builder;
         String baseNexusUrl = getRepository().getUrl();
 
-        // Find the artifact corresponding to this cookbook name and version
-        for (Asset asset : tx.findAssets(
-                Query.builder()
+        // Find the one artifact corresponding to this cookbook name and version
+        Iterator<Asset> iterator = tx
+                .findAssets(Query.builder()
                         .where(String.format("attributes.%s.%s", ChefFormat.NAME, P_ASSET_KIND))
                         .eq(AssetKind.COOKBOOK.name())
                         .and(String.format("attributes.%s.%s", ChefFormat.NAME, ChefAttributes.P_NAME))
@@ -124,14 +132,19 @@ public class SupermarketJsonArtifactsFacetImpl extends FacetSupport implements S
                         .and(String.format("attributes.%s.%s", ChefFormat.NAME, ChefAttributes.P_VERSION))
                         .eq(cookbookVersion)
                         .build(),
-                singletonList(getRepository()))) {
-            log.debug(String.format("Asset is a cookbook with this name (%s) and this version (%s)", cookbookName, cookbookVersion));
-            if (builder == null) {
-                builder = new CookbookVersionInfoJsonModelBuilder(asset, baseNexusUrl);
-            } else {
+                singletonList(getRepository())).iterator();
+
+        if (iterator.hasNext()) {
+            Asset asset = iterator.next();
+            builder = new CookbookVersionInfoJsonModelBuilder(asset, baseNexusUrl);
+            if (iterator.hasNext()) {
                 log.warn(String.format("Several cookbooks found with the same name=%s and version=%s", cookbookName, cookbookVersion));
             }
+        } else {
+            log.debug(String.format("No cookbook found with name=%s and version=%s", cookbookName, cookbookVersion));
+            return null;
         }
+
         log.debug("Returning cookbook info json:\n\n" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(builder.build()) + "\n\n");
         return new Content(new StringPayload(mapper.writeValueAsString(builder.build()),
                 ContentTypes.APPLICATION_JSON));
@@ -165,9 +178,15 @@ public class SupermarketJsonArtifactsFacetImpl extends FacetSupport implements S
             );
             builder.addCookbook(cookbookName, cookbookVersion, versionModel);
         }
-        log.trace("Returning universe json:\n\n" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(builder.build()) + "\n\n");
-        return new Content(new StringPayload(mapper.writeValueAsString(builder.build()),
-                ContentTypes.APPLICATION_JSON));
+
+        if (builder.noCookbooksFound()) {
+            log.debug("No cookbooks found");
+            return null;
+        } else {
+            log.trace("Returning universe json:\n\n" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(builder.build()) + "\n\n");
+            return new Content(new StringPayload(mapper.writeValueAsString(builder.build()),
+                    ContentTypes.APPLICATION_JSON));
+        }
     }
 
     @TransactionalStoreBlob
@@ -187,9 +206,15 @@ public class SupermarketJsonArtifactsFacetImpl extends FacetSupport implements S
             log.trace(String.format("Found asset kind=%s, formatAttributes=%s, asset=%s", asset.formatAttributes().get(P_ASSET_KIND, String.class), asset.formatAttributes().toString(), asset));
             builder.addVersion(asset);
         }
-        log.trace("Returning cookbook info json:\n\n" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(builder.build()) + "\n\n");
-        return new Content(new StringPayload(mapper.writeValueAsString(builder.build()),
-                ContentTypes.APPLICATION_JSON));
+
+        if (builder.noVersionsFound()) {
+            log.debug(String.format("No cookbook found with name=%s", cookbookName));
+            return null;
+        } else {
+            log.trace("Returning cookbook info json:\n\n" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(builder.build()) + "\n\n");
+            return new Content(new StringPayload(mapper.writeValueAsString(builder.build()),
+                    ContentTypes.APPLICATION_JSON));
+        }
     }
 
     private void invalidateMetadata(final AssetEvent assetEvent) {

@@ -95,7 +95,6 @@ public class CookbookInfoJsonModelBuilder {
     }
 
     public CookbookInfoJsonModel build() {
-
         return new CookbookInfoJsonModel(
                 name,
                 maintainer,
@@ -112,6 +111,10 @@ public class CookbookInfoJsonModelBuilder {
                 DEPRECATED,
                 convertVersionsToUrlStrings()
         );
+    }
+
+    public boolean noVersionsFound() {
+        return versions.isEmpty();
     }
 
     private List<String> convertVersionsToUrlStrings() {

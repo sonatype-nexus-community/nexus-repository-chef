@@ -43,4 +43,7 @@ public class UniverseJsonModelBuilder {
         return new UniverseJsonModel(cookbooks);
     }
 
+    public boolean noCookbooksFound() {
+        return cookbooks.isEmpty();
+    }
 }

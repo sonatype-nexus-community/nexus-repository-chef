@@ -58,6 +58,10 @@ class ChefHostedRecipe
 
     public static final String NAME_TOKEN = 'name'
 
+    private static final String NAME_TOKEN_MATCHER = String.format("{%s:.+}", NAME_TOKEN);
+
+    private static final String VERSION_TOKEN_MATCHER = String.format("{%s:.+}", VERSION_TOKEN);
+
     @Inject
     Provider<ChefHostedFacet> hostedFacet
 
@@ -201,18 +205,6 @@ class ChefHostedRecipe
                 .handler(downloadHandler)
                 .create())
 
-        builder.route(uploadMatcher()
-                .handler(timingHandler)
-                .handler(assetKindHandler.rcurry(AssetKind.COOKBOOK))
-                .handler(securityHandler)
-                .handler(exceptionHandler)
-                .handler(handlerContributor)
-                .handler(conditionalRequestHandler)
-                .handler(partialFetchHandler)
-                .handler(contentHeadersHandler)
-                .handler(unitOfWorkHandler)
-                .create())
-
         addBrowseUnsupportedRoute(builder)
 
         builder.defaultHandlers(HttpHandlers.notFound())
@@ -232,8 +224,8 @@ class ChefHostedRecipe
                 LogicMatchers.and(
                         new ActionMatcher(GET, HEAD),
                         LogicMatchers.or(
-                                new TokenMatcher(String.format("/{%s:.+}/{%s:.+}/{filename:.+}.tgz", NAME_TOKEN, VERSION_TOKEN)),
-                                new TokenMatcher("/api/v1/cookbooks/{name:.+}/versions/{version:.+}/download")
+                                new TokenMatcher(String.format("/%s/%s/{filename:.+}.tgz", NAME_TOKEN_MATCHER, VERSION_TOKEN_MATCHER)),
+                                new TokenMatcher(String.format("/api/v1/cookbooks/%s/versions/%s/download", NAME_TOKEN_MATCHER, VERSION_TOKEN_MATCHER))
                         )
                 ))
     }
@@ -242,7 +234,7 @@ class ChefHostedRecipe
         new Route.Builder().matcher(
                 LogicMatchers.and(
                         new ActionMatcher(GET, HEAD),
-                        new RegexMatcher('/universe[.json]*')
+                        new RegexMatcher('/universe(\\.json)?')
                 ))
     }
 
@@ -251,8 +243,8 @@ class ChefHostedRecipe
                 LogicMatchers.and(
                         new ActionMatcher(GET, HEAD),
                         LogicMatchers.or(
-                                new TokenMatcher("/api/v1/cookbooks/{name:.+}/versions/{version:.+}"),
-                                new TokenMatcher("/{name:.+}/{version:.+}/cookbook_version_info.json")
+                                new TokenMatcher(String.format("/api/v1/cookbooks/%s/versions/%s", NAME_TOKEN_MATCHER, VERSION_TOKEN_MATCHER)),
+                                new TokenMatcher(String.format("/%s/%s/cookbook_version_info.json", NAME_TOKEN_MATCHER, VERSION_TOKEN_MATCHER))
                         )
                 ))
     }
@@ -262,17 +254,9 @@ class ChefHostedRecipe
                 LogicMatchers.and(
                         new ActionMatcher(GET, HEAD),
                         LogicMatchers.or(
-                                new TokenMatcher("/api/v1/cookbooks/{name:.+}"),
-                                new TokenMatcher("/{name:.+}/cookbook_info.json")
+                                new TokenMatcher(String.format("/api/v1/cookbooks/%s", NAME_TOKEN_MATCHER)),
+                                new TokenMatcher(String.format("/%s/cookbook_info.json", NAME_TOKEN_MATCHER))
                         )
-                ))
-    }
-
-    static Route.Builder uploadMatcher() {
-        new Route.Builder().matcher(
-                LogicMatchers.and(
-                        new ActionMatcher(PUT),
-                        new TokenMatcher(String.format("/cookbooks/upload/{%s:.+}/{%s:.+}", NAME_TOKEN, VERSION_TOKEN))
                 ))
     }
 }
