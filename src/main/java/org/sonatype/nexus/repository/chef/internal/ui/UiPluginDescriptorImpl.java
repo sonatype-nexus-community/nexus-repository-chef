@@ -29,6 +29,7 @@ public class UiPluginDescriptorImpl
 {
   public UiPluginDescriptorImpl() {
     super("nexus-repository-chef");
+    setHasStyle(false);
     setNamespace("NX.chef");
     setConfigClassName("NX.chef.app.PluginConfig");
   }
