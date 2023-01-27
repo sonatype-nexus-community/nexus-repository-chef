@@ -100,7 +100,7 @@ public class CookbookInfoJsonModelBuilder {
                 maintainer,
                 description,
                 CATEGORY,
-                latestVersion.toString(),
+                convertVersionToUrl(latestVersion),
                 externalUrl,
                 sourceUrl,
                 issuesUrl,
