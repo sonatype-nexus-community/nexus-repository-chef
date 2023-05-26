@@ -10,6 +10,7 @@ import org.sonatype.goodies.common.*;
 import javax.annotation.*;
 import javax.inject.*;
 import java.io.*;
+import java.util.regex.Pattern;
 
 @Named
 @Singleton
@@ -19,7 +20,7 @@ public class TgzParser {
     @Nullable
     public InputStream getFileFromInputStream(final InputStream is, String fileName) throws IOException {
         // Match the sought filename only if it is in the root of the archive or one subfolder down
-        String fileNameRegex = "^(?:[^/]*/)?" + fileName.replaceAll("\\.", "\\\\.") + "$";
+        String fileNameRegex = "^(?:[^/]*/)?" + Pattern.quote(fileName) + "$";
         try (GzipCompressorInputStream gzis = new GzipCompressorInputStream(is)) {
             try (TarArchiveInputStream tais = new TarArchiveInputStream(gzis)) {
                 ArchiveEntry currentEntry;
