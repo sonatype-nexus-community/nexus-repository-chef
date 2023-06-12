@@ -16,6 +16,7 @@ Ext.define('NX.chef.view.repository.recipe.ChefHosted', {
   extend: 'NX.coreui.view.repository.RepositorySettingsForm',
   alias: 'widget.nx-coreui-repository-chef-hosted',
   requires: [
+    'NX.coreui.view.repository.recipe.ChefSettings',
     'NX.coreui.view.repository.facet.StorageFacet',
     'NX.coreui.view.repository.facet.StorageFacetHosted',
     'NX.coreui.view.repository.facet.CleanupPolicyFacet'
@@ -28,6 +29,7 @@ Ext.define('NX.chef.view.repository.recipe.ChefHosted', {
     var me = this;
 
     me.items = [
+      {xtype: 'nx-chefui-repository-chef-chefsettings'},
       {xtype: 'nx-coreui-repository-storage-facet'},
       {xtype: 'nx-coreui-repository-storage-hosted-facet', writePolicy: 'ALLOW'},
       {xtype: 'nx-coreui-repository-cleanup-policy-facet'}

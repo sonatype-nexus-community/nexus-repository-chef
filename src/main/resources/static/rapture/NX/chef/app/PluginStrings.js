@@ -25,7 +25,9 @@ Ext.define('NX.chef.app.PluginStrings', {
   ],
 
   keys: {
-    Repository_Facet_ChefFacet_Title: 'Chef Settings',
+    Repository_Facet_ChefSettings_Title: 'Chef Settings',
+    Repository_Facet_ChefSettings_SupermarketUrl_HelpText: 'Base url to use for Supermarket API responses (example: http://supermarket.internal). Leave blank to use Nexus hostname + repo name.',
+    Repository_Facet_ChefSettings_SupermarketUrl_FieldLabel: 'Base supermarket URL alias',
     SearchChef_Group: 'Chef Repositories',
     SearchChef_License_FieldLabel: 'License',
     SearchChef_Text: 'Chef',

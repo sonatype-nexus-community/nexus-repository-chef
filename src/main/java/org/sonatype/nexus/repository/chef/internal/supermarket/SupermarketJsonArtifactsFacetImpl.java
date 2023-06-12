@@ -120,7 +120,7 @@ public class SupermarketJsonArtifactsFacetImpl extends FacetSupport implements S
         StorageTx tx = UnitOfWork.currentTx();
 
         CookbookVersionInfoJsonModelBuilder builder;
-        String baseNexusUrl = getRepository().getUrl();
+        String baseSupermarketUrl = getSupermarketBaseUrl();
 
         // Find the one artifact corresponding to this cookbook name and version
         Iterator<Asset> iterator = tx
@@ -136,7 +136,7 @@ public class SupermarketJsonArtifactsFacetImpl extends FacetSupport implements S
 
         if (iterator.hasNext()) {
             Asset asset = iterator.next();
-            builder = new CookbookVersionInfoJsonModelBuilder(asset, baseNexusUrl);
+            builder = new CookbookVersionInfoJsonModelBuilder(asset, baseSupermarketUrl);
             if (iterator.hasNext()) {
                 log.warn(String.format("Several cookbooks found with the same name=%s and version=%s", cookbookName, cookbookVersion));
             }
@@ -152,8 +152,8 @@ public class SupermarketJsonArtifactsFacetImpl extends FacetSupport implements S
 
     @TransactionalStoreBlob
     public Content buildUniverseJson() throws JsonProcessingException {
-        String baseNexusUrl = getRepository().getUrl();
-        String locationPath = baseNexusUrl.concat("/api/v1");
+        String baseSupermarketUrl = getSupermarketBaseUrl();
+        String locationPath = baseSupermarketUrl.concat("/api/v1");
         UniverseJsonModelBuilder builder = new UniverseJsonModelBuilder();
 
         StorageTx tx = UnitOfWork.currentTx();
@@ -169,7 +169,7 @@ public class SupermarketJsonArtifactsFacetImpl extends FacetSupport implements S
             String cookbookName = asset.formatAttributes().get(ChefAttributes.P_NAME, String.class);
             String cookbookVersion = asset.formatAttributes().get(ChefAttributes.P_VERSION, String.class);
             Map<String, String> dependencies = AttributesHelper.parseStringIntoMap(asset.formatAttributes().get(ChefAttributes.P_DEPENDS, String.class, null));
-            String downloadPath = ChefPathUtils.buildSupermarketCookbookVersionDownloadUrl(baseNexusUrl, cookbookName, cookbookVersion);
+            String downloadPath = ChefPathUtils.buildSupermarketCookbookVersionDownloadUrl(baseSupermarketUrl, cookbookName, cookbookVersion);
             UniverseJsonCookbookVersionModel versionModel = new UniverseJsonCookbookVersionModel(
                     BASE_LOCATION_TYPE,
                     locationPath,
@@ -191,7 +191,7 @@ public class SupermarketJsonArtifactsFacetImpl extends FacetSupport implements S
 
     @TransactionalStoreBlob
     public Content buildCookbookInfoJson(String cookbookName) throws JsonProcessingException {
-        CookbookInfoJsonModelBuilder builder = new CookbookInfoJsonModelBuilder(getRepository().getUrl());
+        CookbookInfoJsonModelBuilder builder = new CookbookInfoJsonModelBuilder(getSupermarketBaseUrl());
         StorageTx tx = UnitOfWork.currentTx();
 
         // Iterate over all versions of this cookbook
@@ -214,6 +214,16 @@ public class SupermarketJsonArtifactsFacetImpl extends FacetSupport implements S
             log.trace("Returning cookbook info json:\n\n" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(builder.build()) + "\n\n");
             return new Content(new StringPayload(mapper.writeValueAsString(builder.build()),
                     ContentTypes.APPLICATION_JSON));
+        }
+    }
+
+    private String getSupermarketBaseUrl() {
+        String configuredBaseUrl = getRepository().facet(ChefHostedFacet.class).getSupermarketBaseUrl();
+        if (configuredBaseUrl == null || configuredBaseUrl.trim().isEmpty()) {
+            // No base url set in repo config, use full repo url
+            return getRepository().getUrl();
+        } else {
+            return configuredBaseUrl;
         }
     }
 

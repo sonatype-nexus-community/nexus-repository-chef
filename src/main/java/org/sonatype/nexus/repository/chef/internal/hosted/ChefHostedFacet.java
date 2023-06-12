@@ -11,6 +11,9 @@ import java.io.IOException;
 @Facet.Exposed
 public interface ChefHostedFacet
         extends Facet {
+
+    String getSupermarketBaseUrl();
+
     void upload(Payload payload) throws IOException;
 
     @Nullable

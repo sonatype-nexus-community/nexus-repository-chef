@@ -30,10 +30,16 @@ public class ChefApiRepositoryAdapter
                         name,
                         url,
                         online,
+                        createChefHostedRepositoryAttributes(repository),
                         getHostedStorageAttributes(repository),
                         getCleanupPolicyAttributes(repository),
                         getComponentAttributes(repository));
         }
         return null;
+    }
+
+    private ChefHostedRepositoryAttributes createChefHostedRepositoryAttributes(final Repository repository) {
+        String supermarketBaseUrl = repository.getConfiguration().attributes(ChefFormat.NAME).get("supermarketBaseUrl", String.class);
+        return new ChefHostedRepositoryAttributes(supermarketBaseUrl);
     }
 }

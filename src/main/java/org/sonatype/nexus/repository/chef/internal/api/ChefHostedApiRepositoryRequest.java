@@ -9,6 +9,9 @@ import org.sonatype.nexus.repository.rest.api.model.ComponentAttributes;
 import org.sonatype.nexus.repository.rest.api.model.HostedRepositoryApiRequest;
 import org.sonatype.nexus.repository.rest.api.model.HostedStorageAttributes;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 /*
  * Sonatype Nexus (TM) Open Source Version
  * Copyright (c) 2008-present Sonatype, Inc.
@@ -25,13 +28,24 @@ import org.sonatype.nexus.repository.rest.api.model.HostedStorageAttributes;
 public class ChefHostedApiRepositoryRequest
         extends HostedRepositoryApiRequest {
 
+    @NotNull
+    @Valid
+    protected final ChefHostedRepositoryAttributes chef;
+
     @JsonCreator
     public ChefHostedApiRepositoryRequest(
             @JsonProperty("name") final String name,
             @JsonProperty("online") final Boolean online,
+            @JsonProperty("chef") final ChefHostedRepositoryAttributes chef,
             @JsonProperty("storage") final HostedStorageAttributes storage,
             @JsonProperty("cleanup") final CleanupPolicyAttributes cleanup,
             @JsonProperty("component") final ComponentAttributes componentAttributes) {
         super(name, ChefFormat.NAME, online, storage, cleanup, componentAttributes);
+        this.chef = chef;
     }
+
+    public ChefHostedRepositoryAttributes getChef() {
+        return chef;
+    }
+
 }
