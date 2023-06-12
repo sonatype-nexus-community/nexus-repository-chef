@@ -23,7 +23,7 @@
   </parent>
   <artifactId>nexus-repository-chef</artifactId>
   <name>${project.groupId}:${project.artifactId}</name>
-  <version>0.0.8</version>
+  <version>0.0.9</version>
   <inceptionYear>2018</inceptionYear>
   <packaging>bundle</packaging>
 

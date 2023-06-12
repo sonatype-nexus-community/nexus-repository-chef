@@ -10,6 +10,8 @@ public class ChefHostedRepositoryApiRequestToConfigurationConverter
         extends HostedRepositoryApiRequestToConfigurationConverter<ChefHostedApiRepositoryRequest> {
     @Override
     public Configuration convert(final ChefHostedApiRepositoryRequest request) {
-        return super.convert(request);
+        Configuration configuration = super.convert(request);
+        configuration.attributes("chef").set("supermarketBaseUrl", request.getChef().getSupermarketBaseUrl());
+        return configuration;
     }
 }
