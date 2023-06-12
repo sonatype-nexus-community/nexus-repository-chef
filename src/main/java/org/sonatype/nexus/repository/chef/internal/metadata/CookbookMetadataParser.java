@@ -29,8 +29,8 @@ public class CookbookMetadataParser {
     private final MetadataRubyParser metadataRubyParser;
     private final ObjectMapper objectMapper;
 
-    private static final String METADATA_RB = "/metadata.rb";
-    private static final String METADATA_JSON = "/metadata.json";
+    private static final String METADATA_RB = "metadata.rb";
+    private static final String METADATA_JSON = "metadata.json";
 
     @Inject
     public CookbookMetadataParser(final TgzParser tgzParser,
