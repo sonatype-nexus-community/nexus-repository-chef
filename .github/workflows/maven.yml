@@ -1,7 +1,6 @@
 name: Java CI with Maven
 on:
  push:
-   branches: [ "main" ]
    tags: [ "v*" ]
  pull_request:
    branches: [ "main" ]
@@ -18,3 +17,27 @@ jobs:
        cache: maven
    - name: Build with Maven
      run: mvn clean package -PbuildKar --file pom.xml
+   - name: version
+     run: mvn help:evaluate -Dexpression=project.version -q -DforceStdout
+     id: version
+   - name: release
+     if: startsWith(github.ref, 'refs/tags/')
+     uses: actions/create-release@v1
+     id: create_release
+     with:
+       draft: false
+       prerelease: false
+       release_name: ${{ github.ref_name }}
+       tag_name: ${{ github.ref }}
+     env:
+       GITHUB_TOKEN: ${{ github.token }}
+   - name: upload kar artifact
+     if: startsWith(github.ref, 'refs/tags/')
+     uses: actions/upload-release-asset@v1
+     env:
+       GITHUB_TOKEN: ${{ github.token }}
+     with:
+       upload_url: ${{ steps.create_release.outputs.upload_url }}
+       asset_path: ./target/nexus-repository-chef-${{ steps.version.outputs.version }}-bundle.kar
+       asset_name: nexus-repository-chef-${{ steps.version.outputs.version }}-bundle.kar
+       asset_content_type: application/zip
