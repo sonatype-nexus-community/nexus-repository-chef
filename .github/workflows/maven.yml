@@ -18,7 +18,7 @@ jobs:
    - name: Build with Maven
      run: mvn clean package -PbuildKar --file pom.xml
    - name: version
-     run: mvn help:evaluate -Dexpression=project.version -q -DforceStdout
+     run: echo "version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" | tee -a $GITHUB_OUTPUT
      id: version
    - name: release
      if: startsWith(github.ref, 'refs/tags/')
